@@ -1,5 +1,7 @@
 # ENVIRON 790.30 Time Series Analysis for Energy Data - Spring 2023
 
+Student: Kelsey Husted
+Date: 01/19/2023
 
 This is the class repository for Time Series Analysis for Energy Data. <br>
 
