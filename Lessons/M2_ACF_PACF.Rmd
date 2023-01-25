@@ -149,9 +149,21 @@ Many of the functions we will use require a time series object. You can transfor
 
 ```{r}
 ts_inflow_data <- ts(inflow_data[,2:(2+nhydro-1)]) #note that we are only transforming columns with inflow data, not the date columns
+2:(2+nhydro-1)
+
 ts_inflow_data
 #plot(ts_inflow_data[,1])
 ```
 
 Note that ts_inflow_data has information on start, end and frequency. We will discuss frequency in future lectures, for now let's just keep the default value for frequency which is 1.
+
+```{r}
+acf(ts_inflow_data[,1])
+#blue dotted line are the insignificant levels; need to find values outside this line
+```
+
+```{r}
+pacf(ts_inflow_data[,1])
+```
+
 
