@@ -24,9 +24,10 @@ R packages needed for this assignment:"forecast","tseries", and "dplyr". Install
 
 ```{r}
 #Load/install required package here
-library("dplyr")
-library("tseries")
-library("forecast")
+library(dplyr)
+library(tseries)
+library(forecast)
+library(lubridate)
 ```
 
 
@@ -45,8 +46,15 @@ energy_data <- read.csv(file = "./Data/Table_10.1_Renewable_Energy_Production_an
 You will work only with the following columns: Total Biomass Energy Production, Total Renewable Energy Production, Hydroelectric Power Consumption. Create a data frame structure with these three time series only. Use the command head() to verify your data.
 
 ```{r}
+#select columns
 energy_data <- energy_data %>%
   select(1,4:6)
+head(energy_data)
+
+#Transform date column
+Date <- ym(energy_data[,1])
+#reintroduce transformed date column to data set
+energy_data <- cbind(Date, energy_data[,2:4])
 head(energy_data)
 ```
 
@@ -55,6 +63,9 @@ head(energy_data)
 Transform your data frame in a time series object and specify the starting point and frequency of the time series using the function ts().
 
 ```{r}
+#ts transformation
+ts_energy_data <- ts(energy_data[,2:4], frequency = 12, start = c(1973,2 )) 
+ts_energy_data
 
 ```
 
