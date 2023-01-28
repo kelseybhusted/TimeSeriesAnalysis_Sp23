@@ -91,9 +91,22 @@ sd(ts_energy_data[,3])
 Display and interpret the time series plot for each of these variables. Try to make your plot as informative as possible by writing titles, labels, etc. For each plot add a horizontal line at the mean of each series in a different color.
 
 ```{r}
+#Total Biomass Energy Production
+plot(ts_energy_data[,1],type = "l", main = "Monthly Energy Biomass Production",
+        ylab = "Energy Biomass Production",
+        col="green")
 
 ```
 
+```{r}
+#Total Renewable Energy Production
+plot(ts_energy_data[,1])
+```
+
+```{r}
+#Hydroelectric Power Consumption
+
+```
 
 ## Question 5
 Compute the correlation between these three series. Are they significantly correlated? Explain your answer.
