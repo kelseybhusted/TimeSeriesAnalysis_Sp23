@@ -46,7 +46,7 @@ energy_data <- read.csv(file = "./Data/Table_10.1_Renewable_Energy_Production_an
 You will work only with the following columns: Total Biomass Energy Production, Total Renewable Energy Production, Hydroelectric Power Consumption. Create a data frame structure with these three time series only. Use the command head() to verify your data.
 
 ```{r}
-#select columns
+#select columns; will include the time column to practice reformatting date
 energy_data <- energy_data %>%
   select(1,4:6)
 head(energy_data)
@@ -64,9 +64,8 @@ Transform your data frame in a time series object and specify the starting point
 
 ```{r}
 #ts transformation
-ts_energy_data <- ts(energy_data[,2:4], frequency = 12, start = c(1973,2 )) 
+ts_energy_data <- ts(energy_data[,2:4], frequency = 12, start = c(1973,1)) 
 ts_energy_data
-
 ```
 
 
@@ -74,7 +73,17 @@ ts_energy_data
 Compute mean and standard deviation for these three series.
 
 ```{r}
+#Total Biomass Energy Production
+mean(ts_energy_data[,1])
+sd(ts_energy_data[,1])
 
+#Total Renewable Energy Production
+mean(ts_energy_data[,2])
+sd(ts_energy_data[,2])
+
+#Hydroelectric Power Consumption
+mean(ts_energy_data[,3])
+sd(ts_energy_data[,3])
 ```
 
 

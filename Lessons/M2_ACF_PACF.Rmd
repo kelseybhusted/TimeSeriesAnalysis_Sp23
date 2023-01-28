@@ -22,6 +22,7 @@ It's useful to designate one code chunk to load packages on the beginning of the
 ```{r package, include=FALSE}
 library(lubridate)
 library(ggplot2)
+library(forecast)
 
 ```
 
@@ -158,12 +159,15 @@ ts_inflow_data
 Note that ts_inflow_data has information on start, end and frequency. We will discuss frequency in future lectures, for now let's just keep the default value for frequency which is 1.
 
 ```{r}
-acf(ts_inflow_data[,1])
 #blue dotted line are the insignificant levels; need to find values outside this line
+acf(ts_inflow_data[,1], lag.max =50)
+
+Acf(ts_inflow_data[,1], lag.max =50)
+
 ```
 
 ```{r}
-pacf(ts_inflow_data[,1])
+pacf(ts_inflow_data[,1], lag.max =50)
 ```
 
 
