@@ -46,7 +46,7 @@ energy_data <- read.csv(file = "./Data/Table_10.1_Renewable_Energy_Production_an
 You will work only with the following columns: Total Biomass Energy Production, Total Renewable Energy Production, Hydroelectric Power Consumption. Create a data frame structure with these three time series only. Use the command head() to verify your data.
 
 ```{r}
-#select columns; will include the time column to practice reformatting date
+#select specified columns; will include the time column to practice reformatting date
 energy_data <- energy_data %>%
   select(1,4:6)
 head(energy_data)
@@ -56,6 +56,7 @@ Date <- ym(energy_data[,1])
 #reintroduce transformed date column to data set
 energy_data <- cbind(Date, energy_data[,2:4])
 head(energy_data)
+
 ```
 
 
@@ -65,25 +66,30 @@ Transform your data frame in a time series object and specify the starting point
 ```{r}
 #ts transformation
 ts_energy_data <- ts(energy_data[,2:4], frequency = 12, start = c(1973,1)) 
-ts_energy_data
+head(ts_energy_data)
 ```
-
 
 ## Question 3
 Compute mean and standard deviation for these three series.
 
 ```{r}
 #Total Biomass Energy Production
-mean(ts_energy_data[,1])
-sd(ts_energy_data[,1])
+Biomass_mean <- mean(ts_energy_data[,1])
+Biomass_sd <- sd(ts_energy_data[,1])
+Biomass_mean
+Biomass_sd
 
 #Total Renewable Energy Production
-mean(ts_energy_data[,2])
-sd(ts_energy_data[,2])
+Renewable_mean <- mean(ts_energy_data[,2])
+Renewable_sd <- sd(ts_energy_data[,2])
+Renewable_mean
+Renewable_sd
 
 #Hydroelectric Power Consumption
-mean(ts_energy_data[,3])
-sd(ts_energy_data[,3])
+Hydroelect_mean <- mean(ts_energy_data[,3])
+Hydroelect_sd <- sd(ts_energy_data[,3])
+Hydroelect_mean
+Hydroelect_sd
 ```
 
 
@@ -92,43 +98,63 @@ Display and interpret the time series plot for each of these variables. Try to m
 
 ```{r}
 #Total Biomass Energy Production
-plot(ts_energy_data[,1],type = "l", main = "Monthly Energy Biomass Production",
-        ylab = "Energy Biomass Production",
-        col="green")
-
+autoplot(ts_energy_data[,1],main = "Monthly Energy Biomass Production", 
+         col = "cadetblue",
+         ylab = "Energy Biomass Production") +
+         geom_hline(yintercept = Biomass_mean)
 ```
 
 ```{r}
 #Total Renewable Energy Production
-plot(ts_energy_data[,1])
+autoplot(ts_energy_data[,2],main = "Monthly Renewable Energy Production", 
+         col = "chartreuse4",
+         ylab = "Renewable Energy Production") +
+         geom_hline(yintercept = Renewable_mean)
 ```
 
 ```{r}
 #Hydroelectric Power Consumption
-
+autoplot(ts_energy_data[,3],main = "Monthly Hydroelectric Power Consumption", 
+         col = "coral3",
+         ylab = "Hydroelectric Power Consumption") +
+         geom_hline(yintercept = Hydroelect_mean)
 ```
 
 ## Question 5
 Compute the correlation between these three series. Are they significantly correlated? Explain your answer.
-
+ >Answer: A correlation value near 1 or -1 indicates a strong positive or negative correlation. Since the correlation between total biomass and renewable energy production is 0.919, there is a strong positive correlation between the two. In contrast, hydroelectric power consumption and renewable energy production display a weak negative correlation at -0.0996. Hydroelectric power consumption and biomass energy production also show a relatively weak negative correlation at -0.210.
+ 
 ```{r}
-
+cor(ts_energy_data[, c(2, 3, 4)])
 ```
 
 
 ## Question 6
 Compute the autocorrelation function from lag 1 up to lag 40 for these three variables. What can you say about these plots? Do the three of them have the same behavior?
+ > Answer: The biomass energy production and renewable energy production graph behave similarily with predominately positive acf values as seen in the plots displayed below. In contrast, the hydroelectric power consumption behaves differently with more of an oscillating pattern.
 
 ```{r}
+#Total Biomass Energy Production
+acf(ts_energy_data[,1],lag.max=40, type="correlation", plot=TRUE)
+#Total Renewable Energy Production
+acf(ts_energy_data[,2],lag.max=40, type="correlation", plot=TRUE)
+#Hydroelectric Power Consumption
+acf(ts_energy_data[,3],lag.max=40, type="correlation", plot=TRUE)
 
 ```
 
 
 ## Question 7
 Compute the partial autocorrelation function from lag 1 to lag 40 for these three variables. How these plots differ from the ones in Q6?
-
+ > Answer: The values displayed on these plots are far more muted and show a different pattern when compared to the acf plots since intermediate value influences are omitted.
+ 
 ```{r}
-
+#Total Biomass Energy Production
+pacf(ts_energy_data[,1],lag.max=40, plot=TRUE)
+#Total Renewable Energy Production
+pacf(ts_energy_data[,2],lag.max=40, plot=TRUE)
+#Hydroelectric Power Consumption
+pacf(ts_energy_data[,3],lag.max=40, plot=TRUE)
 ```
 
 
