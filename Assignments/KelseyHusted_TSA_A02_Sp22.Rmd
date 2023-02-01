@@ -128,6 +128,22 @@ Compute the correlation between these three series. Are they significantly corre
  
 ```{r}
 cor(ts_energy_data[, c(1, 2, 3)])
+
+
+#Correlation between Biomass Energy Production and Renewable Energy Production
+#p-value < 2.2e-16, reject the null hypothesis
+cor.test(ts_energy_data[, 1], ts_energy_data[,2])
+
+
+#Correlation between Biomass Energy Production and Hydroelectric Power Consumption
+#p-value = 7.256e-14, reject the null hypothesis
+cor.test(ts_energy_data[, 1], ts_energy_data[,3])
+
+
+#Correlation between BRenewable Energy Production and Hydroelectric Power Consumption
+#p p-value = 0.01492, reject the null hypothesis
+cor.test(ts_energy_data[, 2], ts_energy_data[,3])
+
 ```
 
 
