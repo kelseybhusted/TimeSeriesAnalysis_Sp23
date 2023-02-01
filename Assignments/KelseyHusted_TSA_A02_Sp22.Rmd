@@ -28,6 +28,7 @@ library(dplyr)
 library(tseries)
 library(forecast)
 library(lubridate)
+library(ggplot2)
 ```
 
 
@@ -36,8 +37,9 @@ library(lubridate)
 Consider the data provided in the spreadsheet "Table_10.1_Renewable_Energy_Production_and_Consumption_by_Source.xlsx" on our **Data** folder. The data comes from the US Energy Information and Administration and corresponds to the December 2022 Monthly Energy Review. The spreadsheet is ready to be used. You will also find a $.csv$ version of the data "Table_10.1_Renewable_Energy_Production_and_Consumption_by_Source-Edit.csv". You may use the function $read.table()$ to import the $.csv$ data in R. Or refer to the file "M2_ImportingData_CSV_XLSX.Rmd" in our Lessons folder for functions that are better suited for importing the $.xlsx$.
 
 ```{r}
-#Importing data set
+#Check wd
 getwd()
+#Importing data set
 energy_data <- read.csv(file = "./Data/Table_10.1_Renewable_Energy_Production_and_Consumption_by_Source-Edit.csv", header = TRUE, dec = ".")
 ```
 
@@ -125,28 +127,29 @@ Compute the correlation between these three series. Are they significantly corre
  >Answer: A correlation value near 1 or -1 indicates a strong positive or negative correlation. Since the correlation between total biomass and renewable energy production is 0.919, there is a strong positive correlation between the two. In contrast, hydroelectric power consumption and renewable energy production display a weak negative correlation at -0.0996. Hydroelectric power consumption and biomass energy production also show a relatively weak negative correlation at -0.210.
  
 ```{r}
-cor(ts_energy_data[, c(2, 3, 4)])
+cor(ts_energy_data[, c(1, 2, 3)])
 ```
 
 
 ## Question 6
 Compute the autocorrelation function from lag 1 up to lag 40 for these three variables. What can you say about these plots? Do the three of them have the same behavior?
- > Answer: The biomass energy production and renewable energy production graph behave similarily with predominately positive acf values as seen in the plots displayed below. In contrast, the hydroelectric power consumption behaves differently with more of an oscillating pattern.
+ > Answer: The biomass energy production and renewable energy production graph behave similarily with significant, positive acf values (i.e., high correlation) as seen in the plots displayed below. In contrast, the hydroelectric power consumption behaves differently with more of an oscillating pattern which can indicate seasonality.
 
 ```{r}
 #Total Biomass Energy Production
-acf(ts_energy_data[,1],lag.max=40, type="correlation", plot=TRUE)
+acf(ts_energy_data[,1],lag.max=40, type="correlation",plot=TRUE)
 #Total Renewable Energy Production
 acf(ts_energy_data[,2],lag.max=40, type="correlation", plot=TRUE)
 #Hydroelectric Power Consumption
 acf(ts_energy_data[,3],lag.max=40, type="correlation", plot=TRUE)
+
 
 ```
 
 
 ## Question 7
 Compute the partial autocorrelation function from lag 1 to lag 40 for these three variables. How these plots differ from the ones in Q6?
- > Answer: The values displayed on these plots are far more muted and show a different pattern when compared to the acf plots since intermediate value influences are omitted.
+ > Answer: The values displayed on these plots are far more muted with less significant correlation and show a different pattern when compared to the acf plots since intermediate value influences are omitted.
  
 ```{r}
 #Total Biomass Energy Production
