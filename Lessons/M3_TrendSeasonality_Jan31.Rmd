@@ -2,6 +2,8 @@
 title: "M3: Class Exercise on Trend and Season - after class Jan 31"
 author: "Luana Lima"
 output: pdf_document
+editor_options: 
+  chunk_output_type: console
 ---
 
 ## Setting R code chunk options
@@ -94,7 +96,7 @@ Note our last observation is from August 2011 but the data file was filled with 
 
 ```{r}
 #Remove last year by replacing current data frame
-inflow_data <- inflow_data[1:(nobs-412,]
+inflow_data <- inflow_data[1:(nobs-12),]
 
 #update object with number of observations
 nobs <- nobs-12
@@ -109,17 +111,23 @@ Fixed!
 Many of the functions we will use require a time series object. You can transform your data in a time series using the function *ts()*. 
 
 ```{r}
-
+ts_inflow <- ts(inflow_data[,2:16], frequency = 12, start = c(1931,1)) 
+head(inflow_data)
 ```
+
 
 
 ## Plotting ACF and PACF
 
 Let's use functions Acf() and Pacf() from package "forecast".
 
-```{r acf}
-
-
+```{r}
+for(i in 1:nhydro){
+  par(mfrow=c(1,2))
+  Acf(ts_inflow[,i],lag.max=40,plot=TRUE, main=paste0("HP", i))
+  Pacf(ts_inflow[,i],lag.max=40,plot=TRUE, main=paste0("HP", i))
+    
+}
 
 ```
 
@@ -130,11 +138,17 @@ Let's identify and remove trend component like we leaned on the recorded videos 
 
 ```{r}
 #Create vector t
+t= 1:nrow(inflow_data)
+iHP = 4
 
-
-
+#dummies <- seasonaldummy(ts_inflow[,4])
 #Fit a linear trend to TS of iHP
+linear_trend <- lm(inflow_data[,iHP+1] ~ t)
+summary(linear_trend)
 
+ggplot(inflow_data, aes(x=my_date, y=inflow_data[,iHP+1])) +
+  geom_line()+
+  geom_smooth(method="lm")
 
 ```
 
