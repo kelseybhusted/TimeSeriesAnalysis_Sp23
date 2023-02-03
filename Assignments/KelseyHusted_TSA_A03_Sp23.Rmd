@@ -1,7 +1,7 @@
 ---
 title: "ENV 790.30 - Time Series Analysis for Energy Data | Spring 2023"
 subtitle: "Assignment 3 - Due date 02/10/23"
-author: "Student Name"
+author: "Kelsey Husted"
 output: pdf_document
 geometry: margin=2.54cm
 editor_options: 
@@ -28,11 +28,33 @@ When you have completed the assignment, **Knit** the text and code into a single
 
 Consider the same data you used for A2 from the spreadsheet "Table_10.1_Renewable_Energy_Production_and_Consumption_by_Source.xlsx". The data comes from the US Energy Information and Administration and corresponds to the December 2022 **Monthly** Energy Review. Once again you will work only with the following columns: Total Biomass Energy Production, Total Renewable Energy Production, Hydroelectric Power Consumption. Create a data frame structure with these three time series only. 
 
+```{r}
+#Importing data set
+energy_data <- read.csv(file = "./Data/Table_10.1_Renewable_Energy_Production_and_Consumption_by_Source-Edit.csv", header = TRUE, dec = ".")
+
+#select specified columns; will include the time column to practice reformatting date
+energy_data <- energy_data %>%
+  select(1,4:6)
+
+#Transform date column
+Date <- ym(energy_data[,1])
+#reintroduce transformed date column to data set
+energy_data <- cbind(Date, energy_data[,2:4])
+head(energy_data)
+
+#ts transformation
+ts_energy_data <- ts(energy_data[,2:4], frequency = 12, start = c(1973,1)) 
+```
+
 R packages needed for this assignment:"forecast","tseries", and "Kendall". Install these packages, if you haven't done yet. Do not forget to load them before running your script, since they are NOT default packages.\\
 
 ```{r}
 #Load/install required package here
-
+library(tseries)
+library(forecast)
+library(dplyr)
+library(Kendall)
+library(ggplot2)
 ```
 
 ##Trend Component
@@ -40,14 +62,128 @@ R packages needed for this assignment:"forecast","tseries", and "Kendall". Insta
 ### Q1
 Create a plot window that has one row and three columns. And then for each object on your data frame, fill the plot window with time series plot, ACF and PACF. You may use the some code form A2, but I want all three plots on the same window this time. (Hint: use par() function)
 
+```{r}
+#Total Biomass Energy Production
+#meant for plot#1 scripted below
+Biomass_mean <- mean(ts_energy_data[,1])
+
+par(mfrow = c(1,3))
+
+#Plot 1
+plot(ts_energy_data[,1],main = "Monthly Energy Biomass Prod.", 
+         col = "cadetblue",
+         ylab = "Energy Biomass Prod.") +
+         abline(h = Biomass_mean)
+
+#Plot 2
+acf(ts_energy_data[,1],lag.max=40, type="correlation",plot=TRUE, main = "ACF of Energy Biomass Prod.")
+
+#Plot 3
+pacf(ts_energy_data[,1],lag.max=40, plot=TRUE,  main = "PACF of Energy Biomass Prod.")
+```
+
+
+```{r}
+#Total Renewable Energy Production
+#meant for plot#1 scripted below
+Renewable_mean <- mean(ts_energy_data[,2])
+
+par(mfrow = c(1,3))
+
+#Plot 1
+plot(ts_energy_data[,2],main = "Monthly Renewable Energy Prod.", 
+         col = "chartreuse4",
+         ylab = "Renewable Energy Production") +
+         abline(h = Renewable_mean)
+
+#Plot 2
+acf(ts_energy_data[,2],lag.max=40, type="correlation",plot=TRUE, main = "ACF of Renewable Energy Prod.")
+
+#Plot 3
+pacf(ts_energy_data[,2],lag.max=40, plot=TRUE,  main = "PACF of Renewable Energy Prod.")
+```
+
+
+```{r}
+#Hydroelectric Power Consumption
+#meant for plot#1 scripted below
+Hydroelect_mean <- mean(ts_energy_data[,3])
+
+par(mfrow = c(1,3))
+
+#Plot 1
+plot(ts_energy_data[,3],main = "Hydroelectric Consump.", 
+         col = "coral3",
+         ylab = "Hydroelectric Power Consumption") +
+         abline(h = Hydroelect_mean)
+
+#Plot 2
+acf(ts_energy_data[,3],lag.max=40, type="correlation",plot=TRUE, main = "ACF of Hydroelect. Consump.")
+
+#Plot 3
+pacf(ts_energy_data[,3],lag.max=40, plot=TRUE,  main = "PACF of Hydroelect. Consump.")
+```
+
+
 ### Q2
 From the plot in Q1, do the series Total Biomass Energy Production, Total Renewable Energy Production, Hydroelectric Power Consumption appear to have a trend? If yes, what kind of trend?
 
+  >Answer: According to the Q1 plots of the Total Biomass Energy Production and Total Renewable Energy Production, there appears to be a trend since autocorrelations for small lags tend to be large and positive for data with a trend when looking at the ACF plots in general. The slow decrease in the ACF as the lags increase is due to the trend, while the scalloped shape (as seen in the Renewable Energy Production ACF only) is usually due to seasonality.The trend for both Biomass and Renewable Energy appears to be positive with the uphill trend displayed in the general data plots. Alternatively, the Hydroelectric Consumption plots from Q1 looks like there may be a slight downward trend present with seasonality. More analysis will definitely be needed to assess the potential significance of this trend for Hydroelectric Consumption.
+  
+  
 ### Q3
 Use the *lm()* function to fit a linear trend to the three time series. Ask R to print the summary of the regression. Interpret the regression output, i.e., slope and intercept. Save the regression coefficients for further analysis.
- 
+
+```{r}
+#Total Biomass Energy Production
+
+num.obs <- nrow(energy_data)
+observ <- 1:num.obs
+
+#Fit a linear trend to TS 
+biomass_linear_trend <- lm(energy_data[,2] ~ observ)
+summary(biomass_linear_trend)
+
+biomass_linear_trend$coefficients
+
+#The Y-intercept = 133.74 while the slope is 0.480 which indicates a positive relationship between the variables Since the p-value is less than 0.05, we can reject the null hypothesis and say that there is a relationship between time and biomass production (i.e., the dependent variable).
+```
+
+
+```{r}
+#Total Renewable Energy Production
+#Fit a linear trend to TS 
+renewable_linear_trend <- lm(energy_data[,3] ~ observ)
+summary(renewable_linear_trend)
+
+renewable_linear_trend$coefficients
+
+#The Y-intercept = 312.24 while the slope is 0.9362 which indicates a positive relationship between the variables. Since the p-value is less than 0.05, we can reject the null hypothesis and say that there is a relationship between time and renewable energy production (i.e., the dependent variable).
+
+```
+
+
+```{r}
+#Hydroelectric Power Consumption
+#Fit a linear trend to TS 
+hydro_linear_trend <- lm(energy_data[,4] ~ observ)
+summary(hydro_linear_trend)
+
+hydro_linear_trend$coefficients
+
+#The Y-intercept = 259.89 while the slope is -0.082888 which indicates a slight negative relationship. Since the p-value is less than 0.05, we can reject the null hypothesis and say that there is a relationship between time and hydroelectric consumption (i.e., the dependent variable).
+```
+
+
 ### Q4
 Use the regression coefficients from Q3 to detrend the series. Plot the detrended series and compare with the plots from Q1. What happened? Did anything change?
+
+```{r}
+
+
+
+```
+
 
 ### Q5
 Plot ACF and PACF for the detrended series and compare with the plots from Q1. Did the plots change? How?

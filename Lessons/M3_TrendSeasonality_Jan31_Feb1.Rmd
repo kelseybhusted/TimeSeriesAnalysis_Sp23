@@ -32,9 +32,9 @@ library(tseries)
 Let's continue working with our inflow data for reservoirs in Brazil. 
 
 ```{r}
-
+getwd()
 #Importing time series data from text file#
-raw_inflow_data <- read.table(file="../Data/inflowtimeseries.txt",header=FALSE,skip=0)
+raw_inflow_data <- read.table(file="./Data/inflowtimeseries.txt",header=FALSE,skip=0)
 
 #Trim the table to include only columns you need
 nhydro <- ncol(raw_inflow_data)-2
