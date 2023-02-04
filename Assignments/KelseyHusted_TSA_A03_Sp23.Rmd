@@ -68,16 +68,13 @@ Create a plot window that has one row and three columns. And then for each objec
 Biomass_mean <- mean(ts_energy_data[,1])
 
 par(mfrow = c(1,3))
-
 #Plot 1
 plot(ts_energy_data[,1],main = "Monthly Energy Biomass Prod.", 
          col = "cadetblue",
          ylab = "Energy Biomass Prod.") +
          abline(h = Biomass_mean)
-
 #Plot 2
 acf(ts_energy_data[,1],lag.max=40, type="correlation",plot=TRUE, main = "ACF of Energy Biomass Prod.")
-
 #Plot 3
 pacf(ts_energy_data[,1],lag.max=40, plot=TRUE,  main = "PACF of Energy Biomass Prod.")
 ```
@@ -89,16 +86,13 @@ pacf(ts_energy_data[,1],lag.max=40, plot=TRUE,  main = "PACF of Energy Biomass P
 Renewable_mean <- mean(ts_energy_data[,2])
 
 par(mfrow = c(1,3))
-
 #Plot 1
 plot(ts_energy_data[,2],main = "Monthly Renewable Energy Prod.", 
          col = "chartreuse4",
          ylab = "Renewable Energy Production") +
          abline(h = Renewable_mean)
-
 #Plot 2
 acf(ts_energy_data[,2],lag.max=40, type="correlation",plot=TRUE, main = "ACF of Renewable Energy Prod.")
-
 #Plot 3
 pacf(ts_energy_data[,2],lag.max=40, plot=TRUE,  main = "PACF of Renewable Energy Prod.")
 ```
@@ -110,16 +104,13 @@ pacf(ts_energy_data[,2],lag.max=40, plot=TRUE,  main = "PACF of Renewable Energy
 Hydroelect_mean <- mean(ts_energy_data[,3])
 
 par(mfrow = c(1,3))
-
 #Plot 1
 plot(ts_energy_data[,3],main = "Hydroelectric Consump.", 
          col = "coral3",
          ylab = "Hydroelectric Power Consumption") +
          abline(h = Hydroelect_mean)
-
 #Plot 2
 acf(ts_energy_data[,3],lag.max=40, type="correlation",plot=TRUE, main = "ACF of Hydroelect. Consump.")
-
 #Plot 3
 pacf(ts_energy_data[,3],lag.max=40, plot=TRUE,  main = "PACF of Hydroelect. Consump.")
 ```
@@ -178,15 +169,45 @@ hydro_linear_trend$coefficients
 ### Q4
 Use the regression coefficients from Q3 to detrend the series. Plot the detrended series and compare with the plots from Q1. What happened? Did anything change?
 
+>Answer: For all graphs the trends were removed that were once noticeable in the previous graphs created in Q1. For instance, the Biomass and Renewable Energy plots don't show the consistent upward trend after being detrended and the Hydroelectric plot doesn't display the slight downward trend after being detrended.
+
 ```{r}
-
-
-
+par(mfrow = c(1,3))
+#Total Biomass Energy Production
+Biomass_detrend <- residuals(biomass_linear_trend)
+plot(Biomass_detrend, type="l", main = "Detrended Biomass Prod.", 
+         col = "cadetblue",
+         ylab = "Energy Biomass Prod.")
+#Total Renewable Energy Production
+RenewableEnergy_detrend <- residuals(renewable_linear_trend)
+plot(RenewableEnergy_detrend, type = "l", main = "Detrended Renewable Energy Prod.",
+         col = "chartreuse4",
+         ylab = "Renewable Energy Production")
+#Hydroelectric Power Consumption
+hydroelectric_detrend <- residuals(hydro_linear_trend)
+plot(hydroelectric_detrend, type = "l", main = "Detrended Hydroelectric Consump.", 
+         col = "coral3",
+         ylab = "Hydroelectric Power Consumption") 
 ```
 
 
 ### Q5
 Plot ACF and PACF for the detrended series and compare with the plots from Q1. Did the plots change? How?
+
+>Answer: I didn't notice much change between the previous acf and pacf plots created in Q1 compared to the detrended versions displayed below.
+
+```{r}
+par(mfrow = c(3,2))
+#Total Biomass Energy Production
+acf(Biomass_detrend,lag.max=40, plot=TRUE, main = "Detrended ACF of Biomass Prod.")
+pacf(Biomass_detrend,lag.max=40, plot=TRUE, main = "Detrended PACF of Biomass Prod.")
+#Total Renewable Energy Production
+acf(RenewableEnergy_detrend,lag.max=40,plot=TRUE, main = "Detrended ACF Renewable.")
+pacf(RenewableEnergy_detrend,lag.max=40,plot=TRUE, main = "Detrended PACF Renewable.")
+#Hydroelectric Power Consumption
+acf(hydroelectric_detrend,lag.max=40, plot=TRUE, main = "Detrended ACF Hydroelect.")
+pacf(hydroelectric_detrend,lag.max=40, plot=TRUE, main = "Detrended PACF Hydroelect.")
+```
 
 ## Seasonal Component
 
