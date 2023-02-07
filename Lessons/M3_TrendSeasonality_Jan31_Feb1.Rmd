@@ -155,8 +155,23 @@ ggplot(inflow_data,aes(x=my_date,y=inflow_data[,iHP+1]))+
 
 ```{r}
 #remove the trend from series
+detrend <- residuals(linear_trend)
 
 
+
+beta0 <- linear_trend$coefficients[1]
+beta1 <- linear_trend$coefficients[2]
+
+detrend <- (inflow_data[,(iHP+1)]) - (beta0+beta1*t)
+
+ggplot(inflow_data, aes(x=my_date, y = inflow_data[iHP+1]))+
+  geom_line(color="blue")+
+  geom_line()
+  
+
+
+
+plot(detrend, type = "l", main = "Detrended HP Graph", col = "green")
 
 ```
 Note that blue line is our original series, red lien is our trend, green line is our original series minus the trend or in other words the detrended series. And in orange is the trend line for the detrended series which has slope 0 meaning we were able to effectively eliminate the trend with a linear model.
@@ -167,6 +182,12 @@ Now let's shift attention to the seasonal component.
 
 ```{r}
 #Use seasonal means model
+dummies <- seasonaldummy(ts_inflow_data[,iHP+1])
+
+seas_means_models <- lm(inflow_data[,iHP+1] ~ dummies)
+
+beta0 <- seas_means_models$coefficients[1]
+beta1 <- seas_means_models$coefficients[2:12]
 
 
 ```
@@ -194,8 +215,10 @@ Check for deterministic trend.
 
 #Since I have seasonal data I cannot use the simple MannKendall()
 #another example of functions that need a ts object
+SMKtest <- SeasonalMannKendall(ts_inflow_data[,iHP])
+summary(SMKtest)
 
-
+install.packages(trend)
 #Use yearly date to run Mann Kendall
 
 ```

@@ -77,6 +77,7 @@ plot(ts_energy_data[,1],main = "Monthly Energy Biomass Prod.",
 acf(ts_energy_data[,1],lag.max=40, type="correlation",plot=TRUE, main = "ACF of Energy Biomass Prod.")
 #Plot 3
 pacf(ts_energy_data[,1],lag.max=40, plot=TRUE,  main = "PACF of Energy Biomass Prod.")
+
 ```
 
 
@@ -137,7 +138,7 @@ summary(biomass_linear_trend)
 
 biomass_linear_trend$coefficients
 
-#The Y-intercept = 133.74 while the slope is 0.480 which indicates a positive relationship between the variables Since the p-value is less than 0.05, we can reject the null hypothesis and say that there is a relationship between time and biomass production (i.e., the dependent variable).
+#The Y-intercept = 133.74 while the slope is 0.480 which indicates a positive relationship between the variables Since the p-value is less than 0.05, we can reject the null hypothesis and say that there is a significant relationship between time and biomass production (i.e., the dependent variable).
 ```
 
 
@@ -149,7 +150,7 @@ summary(renewable_linear_trend)
 
 renewable_linear_trend$coefficients
 
-#The Y-intercept = 312.24 while the slope is 0.9362 which indicates a positive relationship between the variables. Since the p-value is less than 0.05, we can reject the null hypothesis and say that there is a relationship between time and renewable energy production (i.e., the dependent variable).
+#The Y-intercept = 312.24 while the slope is 0.9362 which indicates a positive relationship between the variables. Since the p-value is less than 0.05, we can reject the null hypothesis and say that there is a significant relationship between time and renewable energy production (i.e., the dependent variable).
 
 ```
 
@@ -215,6 +216,7 @@ Set aside the detrended series and consider the original series again from Q1 to
 
 ### Q6
 Do the series seem to have a seasonal trend? Which serie/series? Use function *lm()* to fit a seasonal means model (i.e. using the seasonal dummies) to this/these time series. Ask R to print the summary of the regression. Interpret the regression output. Save the regression coefficients for further analysis.
+
 
 ### Q7
 Use the regression coefficients from Q6 to deseason the series. Plot the deseason series and compare with the plots from part Q1. Did anything change?
