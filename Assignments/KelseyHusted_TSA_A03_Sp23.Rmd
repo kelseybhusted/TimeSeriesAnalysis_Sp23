@@ -120,7 +120,7 @@ pacf(ts_energy_data[,3],lag.max=40, plot=TRUE,  main = "PACF of Hydroelect. Cons
 ### Q2
 From the plot in Q1, do the series Total Biomass Energy Production, Total Renewable Energy Production, Hydroelectric Power Consumption appear to have a trend? If yes, what kind of trend?
 
-  >Answer: According to the Q1 plots of the Total Biomass Energy Production and Total Renewable Energy Production, there appears to be a trend since autocorrelations for small lags tend to be large and positive for data with a trend when looking at the ACF plots in general. The slow decrease in the ACF as the lags increase is due to the trend, while the scalloped shape (as seen in the Renewable Energy Production ACF only) is usually due to seasonality.The trend for both Biomass and Renewable Energy appears to be positive with the uphill trend displayed in the general data plots. Alternatively, the Hydroelectric Consumption plots from Q1 looks like there may be a slight downward trend present with seasonality. More analysis will definitely be needed to assess the potential significance of this trend for Hydroelectric Consumption.
+  >Answer: According to the Q1 plots of the Total Biomass Energy Production and Total Renewable Energy Production, there appears to be a trend since autocorrelations for small lags tend to be large and positive which is generally associated with a trend when analyzing ACF plots. The slow decrease in the ACF as the lags increase is commonly associated with trends.The trend for both Biomass and Renewable Energy appears to be positive with the uphill trend displayed in the general data plots. Alternatively, the Hydroelectric Consumption plots from Q1 looks like there may be a slight downward trend present with seasonality. More analysis will definitely be needed to assess the potential significance of this trend for Hydroelectric Consumption.
   
   
 ### Q3
@@ -181,6 +181,13 @@ Use the regression coefficients from Q3 to detrend the series. Plot the detrende
 par(mfrow = c(1,3))
 #Total Biomass Energy Production
 Biomass_detrend <- energy_data[,2]-(beta0_biomass+beta1_biomass*observ)
+
+ggplot(energy_data, aes(x = Date, y = energy_data[,2])) +
+  geom_line(color="cadetblue") +
+  ylab(paste0("Detrended Biomass Prod.")) +
+  geom_line(aes(y=Biomass_detrend))
+
+
 plot(Biomass_detrend, type="l", main = "Detrended Biomass Prod.", 
          col = "cadetblue",
          ylab = "Energy Biomass Prod.")
@@ -203,8 +210,11 @@ Plot ACF and PACF for the detrended series and compare with the plots from Q1. D
 >Answer: I didn't notice much change between the previous acf and pacf plots created in Q1 compared to the detrended versions displayed below.
 
 ```{r}
-
+bio
 par(mfrow = c(1,2))
+
+
+
 #Total Biomass Energy Production
 acf(Biomass_detrend,lag.max=40, plot=TRUE, main = "Detrended ACF of Biomass Prod.")
 pacf(Biomass_detrend,lag.max=40, plot=TRUE, main = "Detrended PACF of Biomass Prod.")
@@ -215,6 +225,10 @@ pacf(RenewableEnergy_detrend,lag.max=40,plot=TRUE, main = "Detrended PACF Renewa
 acf(hydroelectric_detrend,lag.max=40, plot=TRUE, main = "Detrended ACF Hydroelect.")
 pacf(hydroelectric_detrend,lag.max=40, plot=TRUE, main = "Detrended PACF Hydroelect.")
 
+
+
+
+
 ```
 
 ## Seasonal Component
@@ -223,6 +237,7 @@ Set aside the detrended series and consider the original series again from Q1 to
 
 ### Q6
 Do the series seem to have a seasonal trend? Which serie/series? Use function *lm()* to fit a seasonal means model (i.e. using the seasonal dummies) to this/these time series. Ask R to print the summary of the regression. Interpret the regression output. Save the regression coefficients for further analysis.
+
  >Answer: When running the seasonal means model, the Total Biomass Production and Renewable Energy Production both displayed p-values > 0.05 so the null hypothesis is accepted and seasonality is not present since the correlation is not significant. Alternatively, the seasonal means model for Hydroelectic Consumption had a p-value < 0.05 so the null hypothesis is rejected and seasonality is thus present.
 
 ```{r}
@@ -264,8 +279,8 @@ for(i in 1:num.obs){
 ### Q7
 Use the regression coefficients from Q6 to deseason the series. Plot the deseason series and compare with the plots from part Q1. Did anything change?
 
- > Answer: The de-seasoned graphs displayed a smoother version with the same exact pattern as the plots from Q1 since that seasonal roughness was removed with all values positive instead.
-
+ > Answer: The de-seasoned graphs displayed a smoother version of the Q1 plots since that seasonal roughness was removed.
+ 
 ```{r}
 par(mfrow=c(1,3))
 #Total Biomass Production
