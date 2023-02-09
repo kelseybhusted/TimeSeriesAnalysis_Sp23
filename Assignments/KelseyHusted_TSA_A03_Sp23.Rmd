@@ -5,7 +5,7 @@ author: "Kelsey Husted"
 output: pdf_document
 geometry: margin=2.54cm
 editor_options: 
-  chunk_output_type: console
+  chunk_output_type: inline
 ---
   
 ## Directions
@@ -133,10 +133,12 @@ num.obs <- nrow(energy_data)
 observ <- 1:num.obs
 
 #Fit a linear trend to TS 
-biomass_linear_trend <- lm(energy_data[,2] ~ observ)
-summary(biomass_linear_trend)
+linear_biomass <- lm(energy_data[,2] ~ observ)
+summary(linear_biomass)
 
-biomass_linear_trend$coefficients
+#save regression coefficients
+beta0_biomass=as.numeric(linear_biomass$coefficients[1])  #first coefficient is the intercept term or beta0
+beta1_biomass=as.numeric(linear_biomass$coefficients[2]) #slope
 
 #The Y-intercept = 133.74 while the slope is 0.480 which indicates a positive relationship between the variables Since the p-value is less than 0.05, we can reject the null hypothesis and say that there is a significant relationship between time and biomass production (i.e., the dependent variable).
 ```
@@ -145,10 +147,12 @@ biomass_linear_trend$coefficients
 ```{r}
 #Total Renewable Energy Production
 #Fit a linear trend to TS 
-renewable_linear_trend <- lm(energy_data[,3] ~ observ)
-summary(renewable_linear_trend)
+linear_renewable<- lm(energy_data[,3] ~ observ)
+summary(linear_renewable)
 
-renewable_linear_trend$coefficients
+#save regression coefficients
+beta0_renewable=as.numeric(linear_renewable$coefficients[1])  #first coefficient is the intercept term or beta0
+beta1_renewable=as.numeric(linear_renewable$coefficients[2]) #slope
 
 #The Y-intercept = 312.24 while the slope is 0.9362 which indicates a positive relationship between the variables. Since the p-value is less than 0.05, we can reject the null hypothesis and say that there is a significant relationship between time and renewable energy production (i.e., the dependent variable).
 
@@ -158,10 +162,11 @@ renewable_linear_trend$coefficients
 ```{r}
 #Hydroelectric Power Consumption
 #Fit a linear trend to TS 
-hydro_linear_trend <- lm(energy_data[,4] ~ observ)
-summary(hydro_linear_trend)
+linear_hydro <- lm(energy_data[,4] ~ observ)
+summary(linear_hydro)
 
-hydro_linear_trend$coefficients
+beta0_hydro=as.numeric(linear_hydro$coefficients[1])  #first coefficient is the intercept term or beta0
+beta1_hydro=as.numeric(linear_hydro$coefficients[2]) #slope
 
 #The Y-intercept = 259.89 while the slope is -0.082888 which indicates a slight negative relationship. Since the p-value is less than 0.05, we can reject the null hypothesis and say that there is a relationship between time and hydroelectric consumption (i.e., the dependent variable).
 ```
@@ -175,17 +180,17 @@ Use the regression coefficients from Q3 to detrend the series. Plot the detrende
 ```{r}
 par(mfrow = c(1,3))
 #Total Biomass Energy Production
-Biomass_detrend <- residuals(biomass_linear_trend)
+Biomass_detrend <- energy_data[,2]-(beta0_biomass+beta1_biomass*observ)
 plot(Biomass_detrend, type="l", main = "Detrended Biomass Prod.", 
          col = "cadetblue",
          ylab = "Energy Biomass Prod.")
 #Total Renewable Energy Production
-RenewableEnergy_detrend <- residuals(renewable_linear_trend)
+RenewableEnergy_detrend <- energy_data[,3]-(beta0_renewable+beta1_renewable*observ)
 plot(RenewableEnergy_detrend, type = "l", main = "Detrended Renewable Energy Prod.",
          col = "chartreuse4",
          ylab = "Renewable Energy Production")
 #Hydroelectric Power Consumption
-hydroelectric_detrend <- residuals(hydro_linear_trend)
+hydroelectric_detrend <- energy_data[,4]-(beta0_hydro+beta1_hydro*observ)
 plot(hydroelectric_detrend, type = "l", main = "Detrended Hydroelectric Consump.", 
          col = "coral3",
          ylab = "Hydroelectric Power Consumption") 
@@ -198,7 +203,8 @@ Plot ACF and PACF for the detrended series and compare with the plots from Q1. D
 >Answer: I didn't notice much change between the previous acf and pacf plots created in Q1 compared to the detrended versions displayed below.
 
 ```{r}
-par(mfrow = c(3,2))
+
+par(mfrow = c(1,2))
 #Total Biomass Energy Production
 acf(Biomass_detrend,lag.max=40, plot=TRUE, main = "Detrended ACF of Biomass Prod.")
 pacf(Biomass_detrend,lag.max=40, plot=TRUE, main = "Detrended PACF of Biomass Prod.")
@@ -208,6 +214,7 @@ pacf(RenewableEnergy_detrend,lag.max=40,plot=TRUE, main = "Detrended PACF Renewa
 #Hydroelectric Power Consumption
 acf(hydroelectric_detrend,lag.max=40, plot=TRUE, main = "Detrended ACF Hydroelect.")
 pacf(hydroelectric_detrend,lag.max=40, plot=TRUE, main = "Detrended PACF Hydroelect.")
+
 ```
 
 ## Seasonal Component
@@ -216,12 +223,92 @@ Set aside the detrended series and consider the original series again from Q1 to
 
 ### Q6
 Do the series seem to have a seasonal trend? Which serie/series? Use function *lm()* to fit a seasonal means model (i.e. using the seasonal dummies) to this/these time series. Ask R to print the summary of the regression. Interpret the regression output. Save the regression coefficients for further analysis.
+ >Answer: When running the seasonal means model, the Total Biomass Production and Renewable Energy Production both displayed p-values > 0.05 so the null hypothesis is accepted and seasonality is not present since the correlation is not significant. Alternatively, the seasonal means model for Hydroelectic Consumption had a p-value < 0.05 so the null hypothesis is rejected and seasonality is thus present.
 
+```{r}
+#Create dummies for three TS
+dummies <- seasonaldummy(ts_energy_data[,1])
+
+#Fit linear model to seasonal dummies
+#Total Biomass Production
+seas_biomass_model <- lm(energy_data[,2]~dummies)
+summary(seas_biomass_model) #p-value > 0.05 so we accept the null hypothesis (i.e., no seasonality)
+beta_int_biomass <- seas_biomass_model$coefficients[1]
+beta_coeff_biomass <- seas_biomass_model$coefficients[2:12]
+biomass_seas_comp=array(0,num.obs)
+for(i in 1:num.obs){
+  biomass_seas_comp[i]=(beta_int_biomass+beta_coeff_biomass%*%dummies[i,])
+}
+
+#Total Renewable Energy Production
+seas_renew_model <- lm(energy_data[,3]~dummies)
+summary(seas_renew_model) # p-value > 0.05 so we accept the null hypothesis (i.e., no seasonality)
+beta_int_renew <- seas_renew_model$coefficients[1]
+beta_coeff_renew <- seas_renew_model$coefficients[2:12]
+renew_seas_comp=array(0,num.obs)
+for(i in 1:num.obs){
+  renew_seas_comp[i]=(beta_int_renew+beta_coeff_renew%*%dummies[i,])
+}
+
+#Hydroelectric Consumption
+seas_hydro_model <- lm(energy_data[,4]~dummies)
+summary(seas_hydro_model) # p-value < 0.05 so we REJECT the null hypothese (i.e., seasonality present)
+beta_int_hydro <- seas_hydro_model$coefficients[1]
+beta_coeff_hydro <- seas_hydro_model$coefficients[2:12]
+hydro_seas_comp=array(0,num.obs)
+for(i in 1:num.obs){
+  hydro_seas_comp[i]=(beta_int_hydro+beta_coeff_hydro%*%dummies[i,])
+}
+```
 
 ### Q7
 Use the regression coefficients from Q6 to deseason the series. Plot the deseason series and compare with the plots from part Q1. Did anything change?
 
+ > Answer: The de-seasoned graphs displayed a smoother version with the same exact pattern as the plots from Q1 since that seasonal roughness was removed with all values positive instead.
+
+```{r}
+par(mfrow=c(1,3))
+#Total Biomass Production
+deseason_biomass <- energy_data[,2]-biomass_seas_comp
+ggplot(energy_data, aes(x = Date, y = energy_data[,2])) +
+  geom_line(color = "cadetblue") +
+  ylab(paste0("De-seasoned Biomass Producition")) +
+  geom_line(aes(y=deseason_biomass))
+
+#Total Renewable Energy Production
+deseason_renew <- energy_data[,3]-renew_seas_comp
+ggplot(energy_data, aes(x = Date, y = energy_data[,3])) +
+  geom_line(color = "chartreuse4") +
+  ylab(paste0("De-seasoned Renewable Energy Prod.")) +
+  geom_line(aes(y=deseason_renew))
+
+#Hydroelectric Consumption
+deseason_hydro <- energy_data[,4]-hydro_seas_comp
+ggplot(energy_data, aes(x = Date, y = energy_data[,4])) +
+  geom_line(color = "coral3") +
+  ylab(paste0("De-seasoned Hydro Consum.")) +
+  geom_line(aes(y=deseason_hydro))
+```
+
 ### Q8
 Plot ACF and PACF for the deseason series and compare with the plots from Q1. Did the plots change? How?
 
+ > Answer: The Hydroelectric Consumption graphs changed the most dramatically compared to the Q1 plots. For instance, the ACF flucuating pattern was removed.
+
+```{r}
+par(mfrow = c(1,2))
+#Total Biomass Production
+acf(deseason_biomass,lag.max=40, plot=TRUE, main = "ACF De-seasoned Biomass Production")
+pacf(deseason_biomass,lag.max=40, plot=TRUE, main = "PACF De-seasoned Biomass Production")
+
+#Total Renewable Energy Production
+acf(deseason_renew,lag.max=40, plot=TRUE, main = "ACF De-seasoned Renewable Energy")
+pacf(deseason_renew,lag.max=40, plot=TRUE, main = "PACF De-seasoned Renewable Energy")
+
+#Hydroelectric Consumption
+acf(deseason_hydro,lag.max=40, plot=TRUE, main = "ACF De-seasoned Hydroelectric")
+pacf(deseason_hydro,lag.max=40, plot=TRUE, main = "PACF De-seasoned Hydroelectric")
+
+
+```
 
