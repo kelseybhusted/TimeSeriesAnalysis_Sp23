@@ -220,6 +220,7 @@ chi_test <- chisq.out.test(inflow_random$inflow,var(inflow_random$inflow))
 print(chi_test) #look at the p-value to find the decision 
 
 #If you need to remove outlier use rm.outlier()
+#rm is replacing with the mean of the series but we'll use the ts functino later in class
 inflow_random$inflow <- rm.outlier(inflow_random$inflow,fill=TRUE) #using fill equal true the value will be replaced by mean or median 
 #Since we removed seasonality replacing with overall mean instead of local mean is acceptable
 

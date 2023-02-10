@@ -22,19 +22,31 @@ Please keep this R code chunk options for the report. It is easier for us to gra
 knitr::opts_chunk$set(echo = TRUE,tidy.opts=list(width.cutoff=80), tidy=FALSE) 
 ```
 
+```{r Packages Loading, include = FALSE}
+#Load/install required package here
+library(tseries)
+require(lubridate)
+library(forecast)
+library(dplyr)
+library(Kendall)
+library(ggplot2)
+library(tidyverse)
+```
+
 When you have completed the assignment, **Knit** the text and code into a single PDF file. Submit this pdf using Sakai. 
 
 ## Questions 
 
 Consider the same data you used for A2 from the spreadsheet "Table_10.1_Renewable_Energy_Production_and_Consumption_by_Source.xlsx". The data comes from the US Energy Information and Administration and corresponds to the December 2022 **Monthly** Energy Review. Once again you will work only with the following columns: Total Biomass Energy Production, Total Renewable Energy Production, Hydroelectric Power Consumption. Create a data frame structure with these three time series only. 
 
-```{r}
+```{r Loading Data}
 #Importing data set
 energy_data <- read.csv(file = "./Data/Table_10.1_Renewable_Energy_Production_and_Consumption_by_Source-Edit.csv", header = TRUE, dec = ".")
 
+
 #select specified columns; will include the time column to practice reformatting date
 energy_data <- energy_data %>%
-  select(1,4:6)
+  select(Month, Total.Biomass.Energy.Consumption, Total.Renewable.Energy.Production, Hydroelectric.Power.Consumption)
 
 #Transform date column
 Date <- ym(energy_data[,1])
@@ -48,13 +60,15 @@ ts_energy_data <- ts(energy_data[,2:4], frequency = 12, start = c(1973,1))
 
 R packages needed for this assignment:"forecast","tseries", and "Kendall". Install these packages, if you haven't done yet. Do not forget to load them before running your script, since they are NOT default packages.\\
 
-```{r}
+```{r Packages}
 #Load/install required package here
 library(tseries)
+require(lubridate)
 library(forecast)
 library(dplyr)
 library(Kendall)
 library(ggplot2)
+library(tidyverse)
 ```
 
 ##Trend Component
@@ -62,7 +76,7 @@ library(ggplot2)
 ### Q1
 Create a plot window that has one row and three columns. And then for each object on your data frame, fill the plot window with time series plot, ACF and PACF. You may use the some code form A2, but I want all three plots on the same window this time. (Hint: use par() function)
 
-```{r}
+```{r Question 1}
 #Total Biomass Energy Production
 #meant for plot#1 scripted below
 Biomass_mean <- mean(ts_energy_data[,1])
@@ -210,9 +224,8 @@ Plot ACF and PACF for the detrended series and compare with the plots from Q1. D
 >Answer: I didn't notice much change between the previous acf and pacf plots created in Q1 compared to the detrended versions displayed below.
 
 ```{r}
-bio
-par(mfrow = c(1,2))
 
+par(mfrow = c(1,2))
 
 
 #Total Biomass Energy Production
