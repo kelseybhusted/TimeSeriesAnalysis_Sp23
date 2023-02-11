@@ -45,7 +45,7 @@ energy_data <- read.csv(file = "./Data/Table_10.1_Renewable_Energy_Production_an
 
 
 #select specified columns; will include the time column to practice reformatting date
-energy_data <- energy_data %>%
+energy_data <-energy_data %>%
   select(Month, Total.Biomass.Energy.Consumption, Total.Renewable.Energy.Production, Hydroelectric.Power.Consumption)
 
 #Transform date column
@@ -149,12 +149,11 @@ observ <- 1:num.obs
 #Fit a linear trend to TS 
 linear_biomass <- lm(energy_data[,2] ~ observ)
 summary(linear_biomass)
-
+#The Y-intercept = 133.74 while the slope is 0.480 which indicates a positive relationship between the variables Since the p-value is less than 0.05, we can reject the null hypothesis and say that there is a significant relationship between time and biomass production (i.e., the dependent variable).
 #save regression coefficients
 beta0_biomass=as.numeric(linear_biomass$coefficients[1])  #first coefficient is the intercept term or beta0
 beta1_biomass=as.numeric(linear_biomass$coefficients[2]) #slope
 
-#The Y-intercept = 133.74 while the slope is 0.480 which indicates a positive relationship between the variables Since the p-value is less than 0.05, we can reject the null hypothesis and say that there is a significant relationship between time and biomass production (i.e., the dependent variable).
 ```
 
 
@@ -163,12 +162,10 @@ beta1_biomass=as.numeric(linear_biomass$coefficients[2]) #slope
 #Fit a linear trend to TS 
 linear_renewable<- lm(energy_data[,3] ~ observ)
 summary(linear_renewable)
-
+#The Y-intercept = 312.24 while the slope is 0.9362 which indicates a positive relationship between the variables. Since the p-value is less than 0.05, we can reject the null hypothesis and say that there is a significant relationship between time and renewable energy production (i.e., the dependent variable).
 #save regression coefficients
 beta0_renewable=as.numeric(linear_renewable$coefficients[1])  #first coefficient is the intercept term or beta0
 beta1_renewable=as.numeric(linear_renewable$coefficients[2]) #slope
-
-#The Y-intercept = 312.24 while the slope is 0.9362 which indicates a positive relationship between the variables. Since the p-value is less than 0.05, we can reject the null hypothesis and say that there is a significant relationship between time and renewable energy production (i.e., the dependent variable).
 
 ```
 
@@ -178,11 +175,10 @@ beta1_renewable=as.numeric(linear_renewable$coefficients[2]) #slope
 #Fit a linear trend to TS 
 linear_hydro <- lm(energy_data[,4] ~ observ)
 summary(linear_hydro)
-
+#The Y-intercept = 259.89 while the slope is -0.082888 which indicates a slight negative relationship. Since the p-value is less than 0.05, we can reject the null hypothesis and say that there is a relationship between time and hydroelectric consumption (i.e., the dependent variable).
 beta0_hydro=as.numeric(linear_hydro$coefficients[1])  #first coefficient is the intercept term or beta0
 beta1_hydro=as.numeric(linear_hydro$coefficients[2]) #slope
 
-#The Y-intercept = 259.89 while the slope is -0.082888 which indicates a slight negative relationship. Since the p-value is less than 0.05, we can reject the null hypothesis and say that there is a relationship between time and hydroelectric consumption (i.e., the dependent variable).
 ```
 
 
@@ -201,20 +197,22 @@ ggplot(energy_data, aes(x = Date, y = energy_data[,2])) +
   ylab(paste0("Detrended Biomass Prod.")) +
   geom_line(aes(y=Biomass_detrend))
 
-
-plot(Biomass_detrend, type="l", main = "Detrended Biomass Prod.", 
-         col = "cadetblue",
-         ylab = "Energy Biomass Prod.")
 #Total Renewable Energy Production
 RenewableEnergy_detrend <- energy_data[,3]-(beta0_renewable+beta1_renewable*observ)
-plot(RenewableEnergy_detrend, type = "l", main = "Detrended Renewable Energy Prod.",
-         col = "chartreuse4",
-         ylab = "Renewable Energy Production")
+
+ggplot(energy_data, aes(x = Date, y = energy_data[,3])) +
+  geom_line(color="chartreuse4") +
+  ylab(paste0("Detrended Renewable Energy")) +
+  geom_line(aes(y=RenewableEnergy_detrend))
+
 #Hydroelectric Power Consumption
 hydroelectric_detrend <- energy_data[,4]-(beta0_hydro+beta1_hydro*observ)
-plot(hydroelectric_detrend, type = "l", main = "Detrended Hydroelectric Consump.", 
-         col = "coral3",
-         ylab = "Hydroelectric Power Consumption") 
+
+ggplot(energy_data, aes(x = Date, y = energy_data[,4])) +
+  geom_line(color="coral3") +
+  ylab(paste0("Detrended Hydroelectric Consump.")) +
+  geom_line(aes(y=hydroelectric_detrend))
+
 ```
 
 
@@ -229,17 +227,22 @@ par(mfrow = c(1,2))
 
 
 #Total Biomass Energy Production
+acf(ts_energy_data[,1],lag.max=40, type="correlation",plot=TRUE, main = "ACF of Energy Biomass Prod.")
 acf(Biomass_detrend,lag.max=40, plot=TRUE, main = "Detrended ACF of Biomass Prod.")
+pacf(ts_energy_data[,1],lag.max=40, plot=TRUE,  main = "PACF of Energy Biomass Prod.")
 pacf(Biomass_detrend,lag.max=40, plot=TRUE, main = "Detrended PACF of Biomass Prod.")
+
 #Total Renewable Energy Production
+acf(ts_energy_data[,2],lag.max=40, type="correlation",plot=TRUE, main = "ACF of Renewable Energy Prod.")
 acf(RenewableEnergy_detrend,lag.max=40,plot=TRUE, main = "Detrended ACF Renewable.")
+pacf(ts_energy_data[,2],lag.max=40, plot=TRUE,  main = "PACF of Renewable Energy Prod.")
 pacf(RenewableEnergy_detrend,lag.max=40,plot=TRUE, main = "Detrended PACF Renewable.")
+
 #Hydroelectric Power Consumption
+acf(ts_energy_data[,3],lag.max=40, type="correlation",plot=TRUE, main = "ACF of Hydroelect. Consump.")
 acf(hydroelectric_detrend,lag.max=40, plot=TRUE, main = "Detrended ACF Hydroelect.")
+pacf(ts_energy_data[,3],lag.max=40, plot=TRUE,  main = "PACF of Hydroelect. Consump.")
 pacf(hydroelectric_detrend,lag.max=40, plot=TRUE, main = "Detrended PACF Hydroelect.")
-
-
-
 
 
 ```
@@ -292,7 +295,7 @@ for(i in 1:num.obs){
 ### Q7
 Use the regression coefficients from Q6 to deseason the series. Plot the deseason series and compare with the plots from part Q1. Did anything change?
 
- > Answer: The de-seasoned graphs displayed a smoother version of the Q1 plots since that seasonal roughness was removed.
+ > Answer: Only the Hydroelectric Consumption data displayed significant seasonality. The de-seasoned graphs displays a smoother version of the Q1 plots will less intense peaks since that seasonal roughness component was removed.
  
 ```{r}
 par(mfrow=c(1,3))
@@ -321,22 +324,28 @@ ggplot(energy_data, aes(x = Date, y = energy_data[,4])) +
 ### Q8
 Plot ACF and PACF for the deseason series and compare with the plots from Q1. Did the plots change? How?
 
- > Answer: The Hydroelectric Consumption graphs changed the most dramatically compared to the Q1 plots. For instance, the ACF flucuating pattern was removed.
+ > Answer: The Hydroelectric Consumption graphs changed the most dramatically compared to the Q1 plots since significant seasonality was removed. For instance, the ACF flucuating pattern was removed.
 
 ```{r}
 par(mfrow = c(1,2))
 #Total Biomass Production
+acf(ts_energy_data[,1],lag.max=40, type="correlation",plot=TRUE, main = "ACF of Energy Biomass Prod.")
 acf(deseason_biomass,lag.max=40, plot=TRUE, main = "ACF De-seasoned Biomass Production")
+pacf(ts_energy_data[,1],lag.max=40, plot=TRUE,  main = "PACF of Energy Biomass Prod.")
 pacf(deseason_biomass,lag.max=40, plot=TRUE, main = "PACF De-seasoned Biomass Production")
 
+
 #Total Renewable Energy Production
+acf(ts_energy_data[,2],lag.max=40, type="correlation",plot=TRUE, main = "ACF of Renewable Energy Prod.")
 acf(deseason_renew,lag.max=40, plot=TRUE, main = "ACF De-seasoned Renewable Energy")
+pacf(ts_energy_data[,2],lag.max=40, plot=TRUE,  main = "PACF of Renewable Energy Prod.")
 pacf(deseason_renew,lag.max=40, plot=TRUE, main = "PACF De-seasoned Renewable Energy")
 
 #Hydroelectric Consumption
+acf(ts_energy_data[,3],lag.max=40, type="correlation",plot=TRUE, main = "ACF of Hydroelect. Consump.")
 acf(deseason_hydro,lag.max=40, plot=TRUE, main = "ACF De-seasoned Hydroelectric")
+pacf(ts_energy_data[,3],lag.max=40, plot=TRUE,  main = "PACF of Hydroelect. Consump.")
 pacf(deseason_hydro,lag.max=40, plot=TRUE, main = "PACF De-seasoned Hydroelectric")
-
 
 ```
 
