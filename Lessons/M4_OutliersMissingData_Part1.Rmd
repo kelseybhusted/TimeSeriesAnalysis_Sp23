@@ -134,8 +134,8 @@ decompose_inflow_data=decompose(ts_inflow_data[,iHP],"additive")
 plot(decompose_inflow_data)
 
 #Inspect random component
-inflow_random <- decompose_inflow_data$random   
-mean_inflow <- mean(inflow_random)  
+inflow_random <- decompose_inflow_data$random  
+mean_inflow <- mean(inflow_random)
 sd_inflow <- sd(inflow_random)
 
 cat(mean_inflow,sd_inflow)
@@ -146,7 +146,6 @@ mean_inflow <- mean(na.exclude(inflow_random))  #exclude NA or missing observati
 sd_inflow <- sd(na.exclude(inflow_random))
 
 cat(mean_inflow,sd_inflow)
-
 
 ```
 ## Missing observations

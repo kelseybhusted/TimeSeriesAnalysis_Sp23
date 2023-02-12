@@ -1,7 +1,7 @@
 ---
 title: "ENV 790.30 - Time Series Analysis for Energy Data | Spring 2023"
 subtitle: "Assignment 4 - Due date 02/17/23"
-author: "Student Name"
+author: "Kelsey Husted"
 output: pdf_document
 geometry: margin=2.54cm
 editor_options: 
@@ -22,8 +22,15 @@ R packages needed for this assignment: "xlsx" or "readxl", "ggplot2", "forecast"
 
 ```{r}
 #Load/install required package here
-
-
+#install.packages("openxlsx")
+library(readxl)
+library(openxlsx)
+library(lubridate)
+library(ggplot2)
+library(forecast)
+library(tseries)
+library(Kendall)
+library(tidyverse)
 ```
 
 ## Questions 
@@ -33,10 +40,36 @@ Consider the same data you used for A3 from the spreadsheet "Table_10.1_Renewabl
 
 ```{r}
 #Importing data set - using xlsx package
+df <- read.xlsx("./Data/Table_10.1_Renewable_Energy_Production_and_Consumption_by_Source.xlsx", startRow = 11)
+df$Month <- convertToDate(df$Month)
 
+df <- df[-c(1), ] #remove the row with the units
+
+#Selecting for Renewable Energy Production column
+energy_data <- df %>%
+  select(Month, Total.Renewable.Energy.Production)
 
 ```
 
+ > Had to also read the data set in as a csv. For some reason, the diff() function was only reading the time series made from the data called in the the "read.csv" function without an error. When I ran a time series on the data called in with "read.xlsx", the diff() function would result in an error stating " non-numeric argument to binary operator."
+
+```{r}
+#Importing data set - using xlsx package
+energy_data <- read.csv(file = "./Data/Table_10.1_Renewable_Energy_Production_and_Consumption_by_Source-Edit.csv", header = TRUE, dec = ".")
+
+#number of columns
+nobs = ncol(energy_data)
+
+Date <- ym(energy_data[,1])
+#reintroduce transformed date column to data set
+energy_data <- cbind(Date, energy_data[,2:14])
+head(energy_data) 
+
+energy_data <- energy_data %>%
+  select(Date, Total.Renewable.Energy.Production)
+head(energy_data)
+
+```
 
 ## Stochastic Trend and Stationarity Tests
 
@@ -49,7 +82,17 @@ Difference the "Total Renewable Energy Production" series using function diff().
 
 Try differencing at lag 1 only once, i.e., make `lag=1` and `differences=1`. Plot the differenced series Do the series still seem to have trend?
 
-```{r}
+ >Answer: The trend was removed after differencing the time series as displayed in the plots below.
+
+```{r Question 1}
+#ts transformation
+ts_energy_data <- ts(energy_data[,2], frequency = 12, start = c(1973,1)) 
+ as.numeric(energy_data$Total.Renewable.Energy.Production)
+diff_ts <- diff(ts_energy_data, lag = 1, differences = 1)
+
+par(mfrow = c(1,2))
+plot(ts_energy_data, types="l", col = "blue", ylab = "Renewable Energy Prod. TS", main = "Time Series")
+plot(diff_ts, type = "l", col="blue", ylab = "Renewable Energy Prod. TS", main = "Differenced TS ")
 
 ```
 
@@ -59,7 +102,27 @@ Now let's compare the differenced series with the detrended series you calculate
 
 Copy and paste part of your code for A3 where you compute regression for Total Energy Production and the detrended Total Energy Production
 
-```{r}
+```{r Question 2}
+num.obs <- nrow(energy_data)
+observ <- 1:num.obs
+
+#run linear model
+linear_renewable<- lm(energy_data[,2] ~ observ)
+summary(linear_renewable)
+
+#save regression coefficients
+beta0_renewable=as.numeric(linear_renewable$coefficients[1])  #first coefficient is the intercept term or beta0
+beta1_renewable=as.numeric(linear_renewable$coefficients[2])
+
+#Detrend
+RenewableEnergy_detrend <- energy_data[,2]-(beta0_renewable+beta1_renewable*observ)
+plot(RenewableEnergy_detrend, type = "l")
+
+
+ggplot(energy_data, aes(x = Date, y = energy_data[,2])) +
+  geom_line(color="chartreuse4") +
+  ylab(paste0("Detrended Renewable Energy")) +
+  geom_line(aes(y=RenewableEnergy_detrend)) 
 
 ```
 
@@ -67,8 +130,13 @@ Copy and paste part of your code for A3 where you compute regression for Total E
 Create a data frame with 4 columns: month, original series, detrended by Regression Series and differenced series. Make sure you properly name all columns. Also note that the differenced series will have only 584 rows because you loose the first observation when differencing. Therefore, you need to remove the first observations for the original series and the detrended by regression series to build the new data frame.
 
 ```{r}
+#Remove first row (i.e., January 1973)
+energy_data<- df[-c(1), ] 
+Detrend <- RenewableEnergy_detrend[2:597]
 #Data frame - remember to not include January 1973
-
+date <- energy_data[,1]
+RenewableEnergyProduction <- energy_data[,2]
+energy_df <- data.frame(date ,RenewableEnergyProduction, Detrend, diff_ts )
 
 ```
 
@@ -77,7 +145,8 @@ Using ggplot() create a line plot that shows the three series together. Make sur
 
 ```{r}
 #Use ggplot
-
+ggplot(energy_df, aes(x = date, y = RenewableEnergyProduction))+
+  geom_line()
 ```
 
 
