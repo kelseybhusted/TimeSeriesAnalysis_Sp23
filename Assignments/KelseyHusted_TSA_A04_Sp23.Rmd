@@ -85,14 +85,12 @@ Try differencing at lag 1 only once, i.e., make `lag=1` and `differences=1`. Plo
  >Answer: The trend was removed after differencing the time series as displayed in the plots below.
 
 ```{r Question 1}
-#ts transformation
-ts_energy_data <- ts(energy_data[,2], frequency = 12, start = c(1973,1)) 
- as.numeric(energy_data$Total.Renewable.Energy.Production)
-diff_ts <- diff(ts_energy_data, lag = 1, differences = 1)
+#differencing
+diff <- diff(energy_data[,2], lag = 1, differences = 1)
 
 par(mfrow = c(1,2))
-plot(ts_energy_data, types="l", col = "blue", ylab = "Renewable Energy Prod. TS", main = "Time Series")
-plot(diff_ts, type = "l", col="blue", ylab = "Renewable Energy Prod. TS", main = "Differenced TS ")
+plot(energy_data[,2], type="l", col = "blue", ylab = "Renewable Energy Prod.", main = "Renewable Energy Production")
+plot(diff, type = "l", col="blue", ylab = "Renewable Energy Prod.", main = "Differenced")
 
 ```
 
@@ -131,12 +129,13 @@ Create a data frame with 4 columns: month, original series, detrended by Regress
 
 ```{r}
 #Remove first row (i.e., January 1973)
-energy_data<- df[-c(1), ] 
+energy_data<- energy_data[-c(1), ] 
 Detrend <- RenewableEnergy_detrend[2:597]
+
 #Data frame - remember to not include January 1973
 date <- energy_data[,1]
 RenewableEnergyProduction <- energy_data[,2]
-energy_df <- data.frame(date ,RenewableEnergyProduction, Detrend, diff_ts )
+energy_df <- data.frame(date ,RenewableEnergyProduction, Detrend, diff)
 
 ```
 
@@ -145,8 +144,12 @@ Using ggplot() create a line plot that shows the three series together. Make sur
 
 ```{r}
 #Use ggplot
-ggplot(energy_df, aes(x = date, y = RenewableEnergyProduction))+
-  geom_line()
+ggplot(energy_df, aes(x = date, y = RenewableEnergyProduction, colour = "Original Data", col="blue")) +
+  geom_line() +
+  geom_line(aes(y=Detrend, colour = "Detrended Data", col = "green")) +
+  geom_line(aes(y=diff, colour = "Differenced Data", col = "red")) +
+  labs(x = "Date", y = "Renewable Energy Production", color = ' ') 
+
 ```
 
 
