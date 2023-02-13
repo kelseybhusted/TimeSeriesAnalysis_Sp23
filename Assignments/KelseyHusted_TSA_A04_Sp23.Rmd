@@ -127,7 +127,7 @@ ggplot(energy_data, aes(x = Date, y = energy_data[,2])) +
 ### Q3
 Create a data frame with 4 columns: month, original series, detrended by Regression Series and differenced series. Make sure you properly name all columns. Also note that the differenced series will have only 584 rows because you loose the first observation when differencing. Therefore, you need to remove the first observations for the original series and the detrended by regression series to build the new data frame.
 
-```{r}
+```{r Question 3}
 #Remove first row (i.e., January 1973)
 energy_data<- energy_data[-c(1), ] 
 Detrend <- RenewableEnergy_detrend[2:597]
@@ -142,7 +142,7 @@ energy_df <- data.frame(date ,RenewableEnergyProduction, Detrend, diff)
 ### Q4
 Using ggplot() create a line plot that shows the three series together. Make sure you add a legend to the plot.
 
-```{r}
+```{r Question 4}
 #Use ggplot
 ggplot(energy_df, aes(x = date, y = RenewableEnergyProduction, colour = "Original Data", col="blue")) +
   geom_line() +
@@ -156,16 +156,37 @@ ggplot(energy_df, aes(x = date, y = RenewableEnergyProduction, colour = "Origina
 ### Q5
 Plot the ACF for the three series and compare the plots. Add the argument `ylim=c(-0.5,1)` to the Acf() function to make sure all three y axis have the same limits. Which method do you think was more efficient in eliminating the trend? The linear regression or differencing?
 
-```{r}
+>Answer: According to the ACF plots displayed below, differencing the original data seems to be a more efficient approach to removing the trend. Small lags that are small and positive and diminish over time are typically associated with a trend which is not seen in the differenced ACF plot.
+
+```{r Question 5}
 #Compare ACFs
 
+
+par(mfrow=c(1,3))
+Acf(energy_df[,2], lag.max = 40, ylim=c(-0.5,1), ylab="Renewable Energy Production", main=" ACF Originial Data")
+Acf(energy_df[,3], lag.max = 40, ylim=c(-0.5,1), ylab="Renewable Energy Production", main=" ACF Detrended Data")
+Acf(energy_df[,4], lag.max = 40, ylim=c(-0.5,1),ylab="Renewable Energy Production", main="ACF Differenced Data")
+
+#for(i in 1:3){
+  #par(mfrow=c(1,3))
+  #Acf(energy_df[,i+1], lag.max = 40, ylim=c(-0.5,1))
+#}
 ```
 
 
 ### Q6
 Compute the Seasonal Mann-Kendall and ADF Test for the original "Total Renewable Energy Production" series. Ask R to print the results. Interpret the results for both test. Whats the conclusion from the Seasonal Mann Kendall test? What's the conclusion for the ADF test? Do they match what you observed in Q2? Recall that having a unit root means the series has a stochastic trend. And when a series has stochastic trend we need to use a different procedure to remove the trend.
 
-```{r}
+>Answer: A Seasonal Mann-Kendall Test is used to determine whether or not a trend exists in a time series data. Since the results of the Seasonal Mann-Kendall Test had a p-value less than 0.05, the null hypothesis is rejected and there is a trend present in the data. The ADF test had a p-value greater than 0.05 which indicates that the data is stationary. However, the ADF Test tests for stoichastic trends and not deterministic trends. 
+
+```{r Question 6}
+#Create a ts variable
+ts_energy_data <- ts(df[,5], frequency = 12, start = c(1973,1))
+#Mann-Kendall Test
+SMKtest <- SeasonalMannKendall(ts_energy_data)
+print(summary(SMKtest))
+#ADF Test
+print(adf.test(ts_energy_data,alternative = "stationary"))
 
 ```
 
@@ -174,6 +195,14 @@ Compute the Seasonal Mann-Kendall and ADF Test for the original "Total Renewable
 Aggregate the original "Total Renewable Energy Production" series by year. You can use the same procedure we used in class. Store series in a matrix where rows represent months and columns represent years. And then take the columns mean using function colMeans(). Recall the goal is the remove the seasonal variation from the series to check for trend. 
 
 ```{r}
+#Create a Year Column
+yearly_energy_data <- energy_data %>%
+  mutate(Year = lubridate::year(energy_data$Date))%>%
+  select('Year', 'Total.Renewable.Energy.Production')
+#Group by Year for annual data
+yearly_energy_data <- yearly_energy_data %>%
+  group_by(Year) %>%
+  summarise(RenewableEnergy = mean(Total.Renewable.Energy.Production))
 
 ```
 
