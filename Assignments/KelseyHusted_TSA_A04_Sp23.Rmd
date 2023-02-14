@@ -196,11 +196,11 @@ Aggregate the original "Total Renewable Energy Production" series by year. You c
 
 ```{r}
 #Create a Year Column
-yearly_energy_data <- energy_data %>%
+annual_energy_data <- energy_data %>%
   mutate(Year = lubridate::year(energy_data$Date))%>%
   select('Year', 'Total.Renewable.Energy.Production')
 #Group by Year for annual data
-yearly_energy_data <- yearly_energy_data %>%
+annual_energy_data <- annual_energy_data %>%
   group_by(Year) %>%
   summarise(RenewableEnergy = mean(Total.Renewable.Energy.Production))
 
@@ -211,6 +211,14 @@ yearly_energy_data <- yearly_energy_data %>%
 Apply the Mann Kendal, Spearman correlation rank test and ADF. Are the results from the test in agreement with the test results for the non-aggregated series, i.e., results for Q6?
 
 ```{r}
-
+#Create a ts variable
+ts_annual_energy_data <- ts(annual_energy_data[,2], frequency = 1, start = c(1973))
+#Mann-Kendall Test
+MKtest <- MannKendall(ts_annual_energy_data)
+print(summary(MKtest))
+#Spearman Correlation Test
+cor.test(ts_energy_data,ts_annual_energy_data, method = "spearman")
+#ADF Test
+print(adf.test(ts_annual_energy_data,alternative = "stationary"))
 ```
 
