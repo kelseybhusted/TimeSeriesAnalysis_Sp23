@@ -49,9 +49,10 @@ df <- df[-c(1), ] #remove the row with the units
 energy_data <- df %>%
   select(Month, Total.Renewable.Energy.Production)
 
+energy_data$Total.Renewable.Energy.Production = as.numeric(energy_data$Total.Renewable.Energy.Production)
 ```
 
- > Had to also read the data set in as a csv. For some reason, the diff() function was only reading the time series made from the data called in the the "read.csv" function without an error. When I ran a time series on the data called in with "read.xlsx", the diff() function would result in an error stating " non-numeric argument to binary operator."
+ > Note: Had to also read the data set in as a csv. For some reason, Q7 would only run with the CSV data.
 
 ```{r}
 #Importing data set - using xlsx package
@@ -118,7 +119,7 @@ plot(RenewableEnergy_detrend, type = "l")
 
 
 ggplot(energy_data, aes(x = Date, y = energy_data[,2])) +
-  geom_line(color="chartreuse4") +
+  geom_line(color="blue") +
   ylab(paste0("Detrended Renewable Energy")) +
   geom_line(aes(y=RenewableEnergy_detrend)) 
 
@@ -177,7 +178,7 @@ Acf(energy_df[,4], lag.max = 40, ylim=c(-0.5,1),ylab="Renewable Energy Productio
 ### Q6
 Compute the Seasonal Mann-Kendall and ADF Test for the original "Total Renewable Energy Production" series. Ask R to print the results. Interpret the results for both test. Whats the conclusion from the Seasonal Mann Kendall test? What's the conclusion for the ADF test? Do they match what you observed in Q2? Recall that having a unit root means the series has a stochastic trend. And when a series has stochastic trend we need to use a different procedure to remove the trend.
 
->Answer: A Seasonal Mann-Kendall Test is used to determine whether or not a trend exists in a time series data. Since the results of the Seasonal Mann-Kendall Test had a p-value less than 0.05, the null hypothesis is rejected and there is a trend present in the data. The ADF test had a p-value greater than 0.05 which indicates that the data is stationary. However, the ADF Test tests for stoichastic trends and not deterministic trends. 
+>Answer: A Seasonal Mann-Kendall Test is used to determine whether or not a trend exists in a time series data. Since the results of the Seasonal Mann-Kendall Test had a p-value less than 0.05, the null hypothesis is rejected and there is a trend present in the data. The ADF test had a p-value greater than 0.05 which indicates a stoichastic trend since we accept the null hypothesis. 
 
 ```{r Question 6}
 #Create a ts variable
@@ -210,6 +211,8 @@ annual_energy_data <- annual_energy_data %>%
 
 Apply the Mann Kendal, Spearman correlation rank test and ADF. Are the results from the test in agreement with the test results for the non-aggregated series, i.e., results for Q6?
 
+>Answer: Both the Mann-Kendall test and the ADF Test display results that are in agreement with Q6 results. Both tests indicate the presence of a trend.
+
 ```{r}
 #Create a ts variable
 ts_annual_energy_data <- ts(annual_energy_data[,2], frequency = 1, start = c(1973))
@@ -217,8 +220,8 @@ ts_annual_energy_data <- ts(annual_energy_data[,2], frequency = 1, start = c(197
 MKtest <- MannKendall(ts_annual_energy_data)
 print(summary(MKtest))
 #Spearman Correlation Test
-cor.test(ts_energy_data,ts_annual_energy_data, method = "spearman")
-#ADF Test
+cor.test(annual_energy_data$RenewableEnergy,annual_energy_data$Year, method = "spearman")
+#ADF Test 
 print(adf.test(ts_annual_energy_data,alternative = "stationary"))
 ```
 
