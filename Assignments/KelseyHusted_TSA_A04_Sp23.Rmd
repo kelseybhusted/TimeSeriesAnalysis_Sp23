@@ -48,29 +48,10 @@ df <- df[-c(1), ] #remove the row with the units
 #Selecting for Renewable Energy Production column
 energy_data <- df %>%
   select(Month, Total.Renewable.Energy.Production)
-
+#transform renewable energy data column from character to numeric
 energy_data$Total.Renewable.Energy.Production = as.numeric(energy_data$Total.Renewable.Energy.Production)
 ```
 
- > Note: Had to also read the data set in as a csv. For some reason, Q7 would only run with the CSV data.
-
-```{r}
-#Importing data set - using xlsx package
-energy_data <- read.csv(file = "./Data/Table_10.1_Renewable_Energy_Production_and_Consumption_by_Source-Edit.csv", header = TRUE, dec = ".")
-
-#number of columns
-nobs = ncol(energy_data)
-
-Date <- ym(energy_data[,1])
-#reintroduce transformed date column to data set
-energy_data <- cbind(Date, energy_data[,2:14])
-head(energy_data) 
-
-energy_data <- energy_data %>%
-  select(Date, Total.Renewable.Energy.Production)
-head(energy_data)
-
-```
 
 ## Stochastic Trend and Stationarity Tests
 
@@ -90,7 +71,7 @@ Try differencing at lag 1 only once, i.e., make `lag=1` and `differences=1`. Plo
 diff <- diff(energy_data[,2], lag = 1, differences = 1)
 
 par(mfrow = c(1,2))
-plot(energy_data[,2], type="l", col = "blue", ylab = "Renewable Energy Prod.", main = "Renewable Energy Production")
+plot(energy_data[,2], type="l", col = "blue", ylab = "Renewable Energy Prod.", main = "Renewable Energy Prod.")
 plot(diff, type = "l", col="blue", ylab = "Renewable Energy Prod.", main = "Differenced")
 
 ```
@@ -118,7 +99,7 @@ RenewableEnergy_detrend <- energy_data[,2]-(beta0_renewable+beta1_renewable*obse
 plot(RenewableEnergy_detrend, type = "l")
 
 
-ggplot(energy_data, aes(x = Date, y = energy_data[,2])) +
+ggplot(energy_data, aes(x = Month, y = energy_data[,2])) +
   geom_line(color="blue") +
   ylab(paste0("Detrended Renewable Energy")) +
   geom_line(aes(y=RenewableEnergy_detrend)) 
@@ -157,7 +138,7 @@ ggplot(energy_df, aes(x = date, y = RenewableEnergyProduction, colour = "Origina
 ### Q5
 Plot the ACF for the three series and compare the plots. Add the argument `ylim=c(-0.5,1)` to the Acf() function to make sure all three y axis have the same limits. Which method do you think was more efficient in eliminating the trend? The linear regression or differencing?
 
->Answer: According to the ACF plots displayed below, differencing the original data seems to be a more efficient approach to removing the trend. Small lags that are small and positive and diminish over time are typically associated with a trend which is not seen in the differenced ACF plot.
+>Answer: According to the ACF plots displayed below, differencing the original data seems to be a more efficient approach to removing the trend. Small lags that are small and positive and diminish over time are typically associated with a trend which is not seen in the differenced ACF plot compared to the other plots.
 
 ```{r Question 5}
 #Compare ACFs
@@ -168,10 +149,6 @@ Acf(energy_df[,2], lag.max = 40, ylim=c(-0.5,1), ylab="Renewable Energy Producti
 Acf(energy_df[,3], lag.max = 40, ylim=c(-0.5,1), ylab="Renewable Energy Production", main=" ACF Detrended Data")
 Acf(energy_df[,4], lag.max = 40, ylim=c(-0.5,1),ylab="Renewable Energy Production", main="ACF Differenced Data")
 
-#for(i in 1:3){
-  #par(mfrow=c(1,3))
-  #Acf(energy_df[,i+1], lag.max = 40, ylim=c(-0.5,1))
-#}
 ```
 
 
@@ -185,9 +162,9 @@ Compute the Seasonal Mann-Kendall and ADF Test for the original "Total Renewable
 ts_energy_data <- ts(df[,5], frequency = 12, start = c(1973,1))
 #Mann-Kendall Test
 SMKtest <- SeasonalMannKendall(ts_energy_data)
-print(summary(SMKtest))
+print(summary(SMKtest)) # p-value=<2.22e-16 so we reject the null hypothesis (i.e., no trend)
 #ADF Test
-print(adf.test(ts_energy_data,alternative = "stationary"))
+print(adf.test(ts_energy_data,alternative = "stationary")) #p-value = 0.9056 so we accept the null hypothesis (i.e., stochastic trend)
 
 ```
 
@@ -198,7 +175,7 @@ Aggregate the original "Total Renewable Energy Production" series by year. You c
 ```{r}
 #Create a Year Column
 annual_energy_data <- energy_data %>%
-  mutate(Year = lubridate::year(energy_data$Date))%>%
+  mutate(Year = lubridate::year(energy_data$Month))%>%
   select('Year', 'Total.Renewable.Energy.Production')
 #Group by Year for annual data
 annual_energy_data <- annual_energy_data %>%
@@ -218,10 +195,10 @@ Apply the Mann Kendal, Spearman correlation rank test and ADF. Are the results f
 ts_annual_energy_data <- ts(annual_energy_data[,2], frequency = 1, start = c(1973))
 #Mann-Kendall Test
 MKtest <- MannKendall(ts_annual_energy_data)
-print(summary(MKtest))
+print(summary(MKtest)) # p-value=<2.22e-16 so we reject the null hypothesis (i.e., no trend)
 #Spearman Correlation Test
 cor.test(annual_energy_data$RenewableEnergy,annual_energy_data$Year, method = "spearman")
 #ADF Test 
-print(adf.test(ts_annual_energy_data,alternative = "stationary"))
+print(adf.test(ts_annual_energy_data,alternative = "stationary"))  #p-value = 0.99 so we accept the null hypothesis (i.e., stochastic trend)
 ```
 
