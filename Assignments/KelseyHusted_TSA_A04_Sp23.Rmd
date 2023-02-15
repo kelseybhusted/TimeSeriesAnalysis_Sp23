@@ -20,7 +20,11 @@ When you have completed the assignment, **Knit** the text and code into a single
 
 R packages needed for this assignment: "xlsx" or "readxl", "ggplot2", "forecast","tseries", and "Kendall". Install these packages, if you haven't done yet. Do not forget to load them before running your script, since they are NOT default packages.\\
 
-```{r}
+```{r setup, include=FALSE} 
+knitr::opts_chunk$set(echo = TRUE,tidy.opts=list(width.cutoff=80), tidy=FALSE) 
+```
+
+```{r, message=FALSE, warning=FALSE}
 #Load/install required package here
 #install.packages("openxlsx")
 library(readxl)
@@ -99,10 +103,11 @@ RenewableEnergy_detrend <- energy_data[,2]-(beta0_renewable+beta1_renewable*obse
 plot(RenewableEnergy_detrend, type = "l")
 
 
-ggplot(energy_data, aes(x = Month, y = energy_data[,2])) +
-  geom_line(color="blue") +
+ggplot(energy_data, aes(x = Month, y = energy_data[,2], colour = "Original Data", col="blue")) +
+  geom_line() +
   ylab(paste0("Detrended Renewable Energy")) +
-  geom_line(aes(y=RenewableEnergy_detrend)) 
+  geom_line(aes(y=RenewableEnergy_detrend, colour = "Detrended Data"))+
+  labs(x = "Date", y = "Renewable Energy Production", color = ' ')
 
 ```
 
