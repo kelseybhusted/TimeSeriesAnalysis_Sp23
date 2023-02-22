@@ -1,7 +1,7 @@
 ---
 title: "ENV 790.30 - Time Series Analysis for Energy Data | Spring 2023"
 subtitle: "Assignment 5 - Due date 02/27/23"
-author: "Student Name"
+author: "Kelsey Husted"
 output: pdf_document
 geometry: margin=2.54cm
 editor_options: 
@@ -22,14 +22,16 @@ R packages needed for this assignment: "xlsx" or "readxl", "ggplot2", "forecast"
 
 ```{r}
 #Load/install required package here
-library(xlsx)
+#library(xlsx)
+library(gridExtra)
+library(readxl)
+library(openxlsx)
 library(forecast)
 library(tseries)
 library(ggplot2)
 library(Kendall)
 library(lubridate)
 library(tidyverse)  #load this package so yon clean the data frame using pipes
-
 
 ```
 
@@ -38,14 +40,10 @@ library(tidyverse)  #load this package so yon clean the data frame using pipes
 Consider the same data you used for A04 from the spreadsheet "Table_10.1_Renewable_Energy_Production_and_Consumption_by_Source.xlsx".
 
 ```{r}
-#Importing data set - using xlsx package
-energy_data <- read.xlsx(file="./Data/Table_10.1_Renewable_Energy_Production_and_Consumption_by_Source.xlsx",header=FALSE,startRow = 13,sheetIndex=1) #startRow is equivalent to skip on read.table
-
-#Now let's extract the column names from row 11 only
-read_col_names <- read.xlsx(file="./Data/Table_10.1_Renewable_Energy_Production_and_Consumption_by_Source.xlsx",header=FALSE,startRow = 11,endRow=11,sheetIndex=1)
-
-colnames(energy_data) <- read_col_names
-head(energy_data)
+energy_data <- read.csv("./Data/Table_10.1_Renewable_Energy_Production_and_Consumption_by_Source-Edit.csv")
+#Transform date column
+Date <- ym(energy_data[,1])
+energy_data <- cbind(Date, energy_data[,2:10])
 
 nobs=nrow(energy_data)
 nvar=ncol(energy_data)
@@ -57,7 +55,12 @@ nvar=ncol(energy_data)
 For this assignment you will work only with the following columns: Solar Energy Consumption and Wind Energy Consumption. Create a data frame structure with these two time series only and the Date column. Drop the rows with *Not Available* and convert the columns to numeric. You can use filtering to eliminate the initial rows or convert to numeric and then use the drop_na() function. If you are familiar with pipes for data wrangling, try using it!
 
 ```{r}
+energy_data <- energy_data %>%
+  select("Date", "Solar.Energy.Consumption", "Wind.Energy.Consumption") %>%
+  subset(Solar.Energy.Consumption!= "Not Available" & Wind.Energy.Consumption!= "Not Available" )
 
+energy_data$Solar.Energy.Consumption = as.numeric(energy_data$Solar.Energy.Consumption)
+energy_data$Wind.Energy.Consumption = as.numeric(energy_data$Wind.Energy.Consumption)
 
 ```
 
@@ -67,6 +70,14 @@ Plot the Solar and Wind energy consumption over time using ggplot. Plot each ser
 
 ```{r}
 
+plot1 <- ggplot(energy_data, aes(x=Date, y=Solar.Energy.Consumption)) +
+  geom_line(color="blue") +
+  labs(y = "Solar Energy Consumption")
+
+plot2 <- ggplot(energy_data, aes(x=Date, y=Wind.Energy.Consumption)) +
+  geom_line(color="green") +
+  labs(y="Wind Energy Consumption")
+grid.arrange(plot1, plot2, ncol=2)
 ```
 
 ### Q3
@@ -75,7 +86,11 @@ Now plot both series in the same graph, also using ggplot(). Look at lines 141-1
 
 ```{r}
 
-
+ggplot(energy_data, aes(x=Date, y=Wind.Energy.Consumption, colour = "Wind", col = "blue")) +
+  geom_line() +
+  geom_line(aes(y=Solar.Energy.Consumption, colour = "Solar", col = "red")) +
+  labs(y="Energy Consumption", color = " ")
+  scale_x_discrete()
 
 ```
 
