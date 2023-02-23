@@ -133,7 +133,7 @@ plot(decompose_solar_mult)
 
 When fitting a model to this data, do you think you need all the historical data? Think about the data from 90s and early 20s. Are there any information from those years we might need to forecast the next six months of Solar and/or Wind consumption. Explain your response.
 
-> Answer: I would assume that maybe having data over a longer period of time is generally better in practive with potentially higher statistical significance. Even so, without the historical data, one can still observe the upward trend and seasonality in the data.
+> Answer: I would assume that maybe having data over a longer period of time is generally better in practice with potentially higher statistical significance. Even so, without the historical data, one can still observe the upward trend and seasonality in the data.
 
 ### Q6
 
