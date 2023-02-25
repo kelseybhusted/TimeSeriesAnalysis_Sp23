@@ -20,7 +20,7 @@ When you have completed the assignment, **Knit** the text and code into a single
 
 R packages needed for this assignment: "xlsx" or "readxl", "ggplot2", "forecast","tseries", and "Kendall". Install these packages, if you haven't done yet. Do not forget to load them before running your script, since they are NOT default packages.\\
 
-```{r}
+```{r, message=FALSE, warning=FALSE}
 #Load/install required package here
 #library(xlsx)
 library(gridExtra)
@@ -73,12 +73,14 @@ Plot the Solar and Wind energy consumption over time using ggplot. Plot each ser
 
 plot1 <- ggplot(energy_data, aes(x=Date, y=Solar.Energy.Consumption)) +
   geom_line(color="blue") +
-  labs(y = "Solar Energy Consumption") +
+  ylab("Solar Energy Consumption") +
+  #labs(y = "Solar Energy Consumption") +
   scale_x_date(breaks = breaks_width("5 years"), date_labels = "%Y")
 
 plot2 <- ggplot(energy_data, aes(x=Date, y=Wind.Energy.Consumption)) +
   geom_line(color="green") +
-  labs(y="Wind Energy Consumption") +
+  ylab("Wind Energy Consumption") +
+  #labs(y="Wind Energy Consumption") +
   scale_x_date(breaks = breaks_width("5 years"), date_labels = "%Y")
 
 grid.arrange(plot1, plot2, ncol=2)
@@ -93,16 +95,17 @@ Now plot both series in the same graph, also using ggplot(). Look at lines 141-1
 ggplot(energy_data, aes(x=Date, y=Wind.Energy.Consumption, colour = "Wind", col = "blue")) +
   geom_line() +
   geom_line(aes(y=Solar.Energy.Consumption, colour = "Solar", col = "red")) +
+  #ylabs("Energy Consumption") +
   labs(y="Energy Consumption", color = " ") +
   scale_x_date(breaks = breaks_width("5 years"), date_labels = "%Y")
-
+#used a different method to create a legend o I had to use labs(y=...) instead of the ylab(..) function
 ```
 
 ### Q4
 
 Transform wind and solar series into a time series object and apply the decompose function on them using the additive option, i.e., `decompose(ts_data, type = "additive")`. What can you say about the trend component? What about the random component? Does the random component look random? Or does it appear to still have some seasonality on it?
 
->Answer: For both solar and wind, the trend is noticeably increasing. Alternatively, the random components for solar and wind appear to be cyclic with a gradual increase in magnitude. Consequently, I think there may be some seasonality remaining in the radom component for both solar and wind data.
+>Answer: For both solar and wind, the trend is noticeably increasing. Alternatively, the random components for solar and wind appear to be cyclic with a gradual increase in magnitude. Consequently, I think there may be some seasonality remaining in the radom component for both solar and wind data. The additive model is useful when seasonal variation is constant over time, so maybe seasonality increases over time instead.
 
 ```{r Question 4}
 #apply ts
@@ -119,7 +122,7 @@ plot(decompose_solar_add)
 
 Use the decompose function again but now change the type of the seasonal component from additive to multiplicative. What happened to the random component this time?
 
->Anwer: The cyclic and additive nature of the random components were removed for both solar and wind consumption data.
+>Anwer: It seems like the cyclic and additive nature of the random components were removed for both solar and wind consumption data. Futhermore, there isn't a gradual increase in cycles as seen in the decomposed plots of Q4.
 
 ```{r Question 5}
 #decompose with multiplicative
@@ -133,11 +136,13 @@ plot(decompose_solar_mult)
 
 When fitting a model to this data, do you think you need all the historical data? Think about the data from 90s and early 20s. Are there any information from those years we might need to forecast the next six months of Solar and/or Wind consumption. Explain your response.
 
-> Answer: I would assume that maybe having data over a longer period of time is generally better in practice with potentially higher statistical significance. Even so, without the historical data, one can still observe the upward trend and seasonality in the data.
+> Answer: I would assume that maybe having data over a longer period of time is generally better in practice with potentially higher statistical significance when forecasting over longer periods. Even so, without the historical data, one can still observe the upward trend and seasonality in the data and thus potentially forecast for the next six months. Maybe removing some historical data might help provide a more accurate forecast by omitting anomaly events.
 
 ### Q6
 
 Create a new time series object where historical data starts on January 2012. Hint: use `filter()` function so that you don't need to point to row numbers, .i.e, `filter(xxxx, year(Date) >= 2012 )`. Apply the decompose function `type=additive` to this new time series. Comment the results. Does the random component look random? Think about our discussion in class about seasonal components that depends on the level of the series. 
+
+> Answer: The random components for both solar and wind consumption data appears to be random and very similar to the multiplicative decomposed random plot in Q5.
 
 ```{r}
 #filter data
@@ -155,7 +160,6 @@ plot(decompose_solar2) #The decomposed solar plots display an upwards trend and 
 
 ```
 
-> Answer:The random components for both solar and wind consumption data appear slightly random but slightly cyclic.
 
 
 
