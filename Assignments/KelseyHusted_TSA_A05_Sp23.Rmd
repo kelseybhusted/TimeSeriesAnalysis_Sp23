@@ -62,7 +62,7 @@ energy_data <- energy_data %>%
 
 energy_data$Solar.Energy.Consumption = as.numeric(energy_data$Solar.Energy.Consumption)
 energy_data$Wind.Energy.Consumption = as.numeric(energy_data$Wind.Energy.Consumption)
-
+head(energy_data)
 ```
 
 ### Q2
