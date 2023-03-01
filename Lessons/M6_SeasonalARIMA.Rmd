@@ -155,7 +155,7 @@ ns_diff <- nsdiffs(ts_electricity_price[,"Residential"])
 cat("Number of seasonal differencing needed: ",ns_diff)
 
 #Lets difference the series once at lag 12 to remove the seasonal trend.
-residential_price_seas_diff <- diff(ts_electricity_price[,"Residential"],lag=12, differences=1)
+residential_price_seas_diff <- diff(ts_electricity_price[,"Residential"],lag=12, differences=1) #lag=1 usually for non-seasonal
 residential_price_trend_diff <- diff(ts_electricity_price[,"Residential"],lag =1, differences=1) #diff done on orig series
 residential_price_both_diff <- diff(residential_price_trend_diff,lag =12, differences=1)
 
@@ -195,7 +195,7 @@ Now let's look at seasonal lags only (12,24,36,48). ACF has one spike at 12 and 
 ```{r}
 
 SARIMA_manual <- Arima(ts_electricity_price[,"Residential"],order=c(1,1,1),seasonal=c(0,1,1),include.drift=FALSE)
-print(SARIMA_manual)
+print(SARIMA_manual) #drift is false since I'm differencing my series twice
 
 par(mfrow=c(1,3))
 ts.plot(SARIMA_manual$residuals)

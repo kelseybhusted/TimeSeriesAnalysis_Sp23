@@ -1,7 +1,7 @@
 ---
 title: "ENV 790.30 - Time Series Analysis for Energy Data | Spring 2023"
 subtitle: "Assignment 6 - Due date 03/06/23"
-author: "Student Name"
+author: "Kelsey Husted"
 output: pdf_document
 geometry: margin=2.54cm
 ---
@@ -24,9 +24,18 @@ This assignment has general questions about ARIMA Models.
 
 Packages needed for this assignment: "forecast","tseries". Do not forget to load them before running your script, since they are NOT default packages.\\
 
-```{r}
+```{r, message=FALSE, warning=FALSE}
 #Load/install required package here
-
+library(gridExtra)
+require(scales)
+library(readxl)
+library(openxlsx)
+library(forecast)
+library(tseries)
+library(ggplot2)
+library(Kendall)
+library(lubridate)
+library(tidyverse)
 ```
 
 
@@ -36,11 +45,11 @@ Describe the important characteristics of the sample autocorrelation function (A
 
 * AR(2)
 
-> Answer: 
+> Answer: When looking at the ACF plot, the lags are geometric with a gradual decrease for an AR(2) model. The PACF will display two significant lags in which any following lags are cut off right after which represents the order (i.e., p=2).
 
 * MA(1)
 
-> Answer: 
+> Answer: The ACF plot will provide the order of the model (i.e., q) and should display two significant lags with the first lag at 1 representing zero and then the adjacent, significant lag respresenting an order of one. The PACF plot will display lags that are geometrically decreasing.
 
 
 
@@ -48,26 +57,35 @@ Describe the important characteristics of the sample autocorrelation function (A
 Recall that the non-seasonal ARIMA is described by three parameters ARIMA$(p,d,q)$ where $p$ is the order of the autoregressive component, $d$ is the number of times the series need to be differenced to obtain stationarity and $q$ is the order of the moving average component. If we don't need to difference the series, we don't need to specify the "I" part and we can use the short version, i.e., the ARMA$(p,q)$. Consider three models: ARMA(1,0), ARMA(0,1) and ARMA(1,1) with parameters $\phi=0.6$ and $\theta= 0.9$. The $\phi$ refers to the AR coefficient and the $\theta$ refers to the MA coefficient. Use R to generate $n=100$ observations from each of these three models
 
 ```{r}
-
+arma10 <- arima.sim(n = 100, model = list(order = c(1,0,0), ar = 0.6))
+arma01 <- arima.sim(n = 100, model = list(order = c(0,0,1), ma = 0.9))
+arma11 <- arima.sim(n = 100, model = list(order = c(1,0,1), ar = 0.6, ma = 0.9))
 ```
 
 
 (a) Plot the sample ACF for each of these models in one window to facilitate comparison (Hint: use command $par(mfrow=c(1,3))$ that divides the plotting window in three columns).  
 
 ```{r}
-
+par(mfrow=c(1,3))
+Acf(arma10, lag.max = 40,main = "ARMA(1,0)")
+print(Acf(arma10, lag.max = 40,main = "ARMA(1,0)"))
+Acf(arma01, lag.max = 40,main = "ARMA(0,1)")
+Acf(arma11, lag.max = 40,main = "ARMA(1,1)")
 ```
 
 
 (b) Plot the sample PACF for each of these models in one window to facilitate comparison.  
 
 ```{r}
-
+par(mfrow=c(1,3))
+Pacf(arma10, lag.max = 40,main = "ARMA(1,0)")
+Pacf(arma01, lag.max = 40,main = "ARMA(0,1)")
+Pacf(arma11, lag.max = 40,main = "ARMA(1,1)")
 ```
 
 (c) Look at the ACFs and PACFs. Imagine you had these plots for a data set and you were asked to identify the model, i.e., is it AR, MA or ARMA and the order of each component. Would you be identify them correctly? Explain your answer.
 
-> Answer:
+> Answer:I tend to look at the ACF and PACF with the least amount of significant lags when trying to identify the model. All PACF and ACF plots look a little geometric so maybe the models would be an ARMA. However, the PACF plots seem to have more of a cutoff than the ACF plots. I don't know if I would personally be able to identify them and the order, but I definietly lean towards ARMA models for all.  
 
 (d) Compare the ACF and PACF values R computed with the theoretical values you provided for the coefficients. Do they match? Explain your answer.
 
