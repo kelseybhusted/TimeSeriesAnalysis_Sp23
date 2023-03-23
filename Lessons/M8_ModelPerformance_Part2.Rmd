@@ -60,14 +60,14 @@ forecast=c(110,121,112,120,109)
 #Exercise 1: compute MAD, MSE and MAPE
 n=length(actual)
 
-ME = 
-MSE = 
-RMSE = 
-MAE = 
-MPE = 
-MAPE = 
+ME = sum(actual - forecast)/n
+MSE = sum(actual - forecast)^2/n
+RMSE = sqrt(MSE)
+MAE = sum(abs(actual - forecast)/n)
+MPE = sum((actual - forecast)/actual)/(n*100)
+MAPE = sum(abs(actual - forecast/actual/(n*100)))
 
-
+manual  
 
 #Exercise 2: Compute the forecast accuracy metrics you calculated in Ex 1 with the results from accuracy() function.
 

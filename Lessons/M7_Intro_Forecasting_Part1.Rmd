@@ -133,6 +133,7 @@ MEAN_seas <- meanf(y = ts_electricity_price[,"All.sectors"], h = 36)
 plot(MEAN_seas)
 
 #Model 2: Arithmetic mean on deseas data
+#dont use arithmetic appraoch when there is a trend in data
 MEAN_deseas <- meanf(deseasonal_allsectors_price, h=36)
 plot(MEAN_deseas)
 
