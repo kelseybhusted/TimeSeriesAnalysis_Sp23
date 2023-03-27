@@ -174,22 +174,29 @@ plot(decomposed_Hydro)
 deseasonal_tsV2 <- seasadj(decomposed_HydroV2)
 ```
 
-```{r, Question 4}
+
+```{r, Question 4 V2}
 #seasonal component for 2010
-seasonality <- window(ts_HydroV2, start = 2010)
-seasonality_df <- as.numeric(seasonality)
+season <- decomposed_HydroV2$seasonal
+season_select <- season[121:132]
   
 #Add seasonality back into forecasted ts
-seasonality_added <- ARIMA_forecast$mean + seasonality
+forecast <- as.data.frame(ARIMA_forecast)
+
+#new data
+new_data <- forecast$'Point Forecast' + season_select
+
+ts_new_data <- ts(new_data, start = c(2010,1), frequency = 12)
 
 # Plot to compare original data
 autoplot(ts_HydroV2) +
-  autolayer(seasonality_added, series="Seasonality added", PI=FALSE) +
+  autolayer(ts_new_data, series = "forecast+seasonality", PI=FALSE) +
   ylab("Hydro Flow") +
   xlab("Date") +
   labs(col="Model")
 
 ```
+
 
 ### Q5
 
@@ -218,7 +225,7 @@ Compare the plots from Q4 and Q5 using the autoplot() function.
 ```{r, Question 6}
 # Plot
 autoplot(ts_HydroV2) +
-  autolayer(seasonality_added, series="Seasonality added", PI=FALSE) +
+  autolayer(ts_new_data, series="forecast + seasonality", PI=FALSE) +
   autolayer(SARIMA_forecast, series="SARIMA", PI=FALSE) +
   ylab("Hydro Flow") +
   xlab("Date") +
@@ -250,7 +257,7 @@ Make one plot with the complete original seasonal historical data (Jan 2000 to D
 autoplot(ts_HydroV2) +
     autolayer(SARIMA_forecast,series="SARIMA",PI=FALSE) +
     autolayer(ARIMA_forecast,series="ARIMA",PI=FALSE) +
-    autolayer(seasonality_added, series="Seasonality manually added", PI=FALSE) +
+    autolayer(ts_new_data, series="forecast + seasonality", PI=FALSE) +
     autolayer(SES_seas_fit,series="SES",PI=FALSE) +
     ylab("Hydro Flow") +
     xlab("") +
@@ -261,7 +268,7 @@ autoplot(ts_HydroV2) +
 
 From the plot in Q9 which model or model(s) are leading to the better forecasts? Explain your answer. Hint: Think about which models are doing a better job forecasting the high and low inflow months for example.
 
- > Answer: According to the plot in Q8, the SARIMA model is leading to the better forecast since the pattern is matching the original data the best when compared to the other models as seen above.
+ > Answer: According to the plot in Q8, the SARIMA model and forecast+seasonality models are leading to the better forecast since the pattern is matching the original data the best when compared to the other models as seen above.
 
 ### Q10
 
@@ -271,11 +278,12 @@ Now compute the following forecast metrics we learned in class: RMSE and MAPE,  
 
 ```{r, Question 10}
 library(kableExtra)
+
+
 #Store performance metrics
 ARIMA_scores <- accuracy(ARIMA_forecast)
 SARIMA_scores <- accuracy(SARIMA_forecast)
 SES_scores <- accuracy(SES_seas_fit)
-
 
 #create data frame that combines metrics for all the models you created on Ex 3.
 Scores <- as.data.frame(rbind(SARIMA_scores, ARIMA_scores, SES_scores))
