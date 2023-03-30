@@ -59,7 +59,7 @@ The `ts()` function we have been using to create time series objects can only ha
 
 df_frequency_spec <- data.frame(
   Data = c("Annual", "Quartely","Monthly","Weekly"),
-  Frequency = c(1,2,12,52)
+  Frequency = c(1,4,12,52)
 )
 
 kbl(df_frequency_spec, caption="Frequency used with ts() function") %>% 
@@ -130,7 +130,7 @@ unlink(temp)
 act_power_all <- household_all %>% 
   mutate( Global_active_power = as.numeric(Global_active_power)) %>%  
   mutate( Date = dmy(Date)) %>% 
-  mutate( Time = hms(Time)) %>% 
+  mutate( Time = hms(Time)) %>% #hour, min, and seconds
   mutate( Year = year(Date), 
           Month = month(Date), 
           Day = day(Date), 
