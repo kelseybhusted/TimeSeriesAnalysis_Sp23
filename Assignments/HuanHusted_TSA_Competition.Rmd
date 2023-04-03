@@ -1,0 +1,58 @@
+---
+title: "HuanHusted_TSA_Competition"
+author: "Kelsey Husted"
+date: "2023-03-31"
+output: pdf_document
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,tidy.opts=list(width.cutoff=80), tidy=FALSE) 
+```
+
+##Load packages
+
+```{r load packages, warning=FALSE, message=FALSE}
+library(readxl)
+library(dplyr)
+library(lubridate)
+library(openxlsx)
+library(ggplot2)
+library(forecast)  
+library(Kendall)
+library(tseries)
+library(outliers)
+library(tidyverse)
+library(smooth)
+library(zoo)
+library(kableExtra)
+```
+
+## Wrangling and processing the data
+
+Need to transform hourly data into daily data with aggregate and pipes.
+
+```{r, Wrangle & Process Data}
+#Import data
+df <- read_xlsx("./Competition/Data/load.xlsx")
+
+#Wrangle and process the data from hourly to daily
+df_daily <- df %>%
+  mutate( Date = ymd(date)) %>%
+  rowwise(date) %>%
+  summarise(daily_data = mean(c_across(h1:h24)))
+
+```
+
+## Create a time series object
+
+```{r ts, echo=FALSE}
+#ts transformation testing
+ts_df <- msts(df_proccessed)
+
+
+#Comment 2
+
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
