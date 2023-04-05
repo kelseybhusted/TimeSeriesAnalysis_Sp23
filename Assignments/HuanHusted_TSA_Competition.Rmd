@@ -42,16 +42,25 @@ df_daily <- df %>%
   rowwise(date) %>%
   summarise(daily_data = mean(c_across(h1:h24)))
 
+#Second way to wrangle data from hourly to daily
+df_dailyV2 <- df %>%
+  mutate( Date = ymd(date)) %>%
+  select(3:26) %>%
+  mutate(rowMeans(df_dailyV2)) %>%
+  rename(Daily_data = "rowMeans(df_dailyV2)")
+
+date <- df[,2]
+df_dailyV2 <- cbind(date, df_dailyV2$Daily_data)
+         
 ```
 
 ## Create a time series object
 
 ```{r ts, echo=FALSE}
 #ts transformation testing
-ts_df <- msts(df_proccessed)
+ts_daily <- msts(df_dailyV2$df_dailyV2$Daily_data,
+                 seasonal.periods=c())
 
-
-#Comment 2
 
 ```
 
