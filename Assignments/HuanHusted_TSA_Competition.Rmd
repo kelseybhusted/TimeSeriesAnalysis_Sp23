@@ -28,40 +28,101 @@ library(zoo)
 library(kableExtra)
 ```
 
-## Wrangling and processing the data
+## Wrangling and processing the data 2005-2009
 
 Need to transform hourly data into daily data with aggregate and pipes.
 
-```{r, Wrangle & Process Data}
+```{r, Wrangle & Process Data 2005-2009}
 #Import data
 df <- read_xlsx("./Competition/Data/load.xlsx")
 
-#Wrangle and process the data from hourly to daily
+#Wrangle data from hourly to daily
+#Wrangling date column 2005 to 2009
 df_daily <- df %>%
   mutate( Date = ymd(date)) %>%
-  rowwise(date) %>%
-  summarise(daily_data = mean(c_across(h1:h24)))
+  filter(Date < '2010-01-01')
 
-#Second way to wrangle data from hourly to daily
+#removing no numeric columns so rowMeans() functino will work
 df_dailyV2 <- df %>%
   mutate( Date = ymd(date)) %>%
-  select(3:26) %>%
-  mutate(rowMeans(df_dailyV2)) %>%
-  rename(Daily_data = "rowMeans(df_dailyV2)")
+  filter(Date < '2010-01-01') %>%
+  select(3:26)
 
-date <- df[,2]
-df_dailyV2 <- cbind(date, df_dailyV2$Daily_data)
-         
+#Creating daily data
+df_processed <- df_dailyV2 %>%  
+  mutate(rowMeans(df_dailyV2)) %>%
+  rename(Daily_data = "rowMeans(df_dailyV2)") %>%
+  select(25)
+
+#Combining data and daily data
+date <- df_daily[,2]
+df_processed <- cbind(date, df_processed)
+
+nobs = row(df_daily)         
+```
+
+## Wrangling and processing the data 2005-2010
+
+
+```{r, Wrangle & Process Data 2005-2010}
+
+#Wrangle data from hourly to daily
+#Wrangling date column 2005 to 2010
+#removing no numeric columns so rowMeans() functino will work
+df_daily2010 <- df %>%
+  mutate( Date = ymd(date)) %>%
+  select(3:26)
+
+#Creating daily data
+df_processed2010 <- df_daily2010 %>%  
+  mutate(rowMeans(df_daily2010)) %>%
+  rename(Daily_data = "rowMeans(df_daily2010)") %>%
+  select(25)
+
+#Combining data and daily data
+date <- df_daily2010[,2]
+df_processed2010 <- cbind(date, df_processed2010)
+
+nobs2010 = row(df_daily2010)
+
 ```
 
 ## Create a time series object
 
-```{r ts, echo=FALSE}
-#ts transformation testing
-ts_daily <- msts(df_dailyV2$df_dailyV2$Daily_data,
-                 seasonal.periods=c())
+```{r ts, message=FALSE, warning=FALSE}
+#ts transformation 2005 to 2009
+ts_daily <- msts(df_processed$Daily_data,
+                 seasonal.periods=c(7,365.25),
+                 start=c(2005, 01, 01))
 
-
+#ts transformation 2005 to 2010
+ts_daily2010 <- msts(df_processed2010$Daily_data,
+                 seasonal.periods=c(7,365.25),
+                 start=c(2005, 01, 01))
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+## Decompose time series
+
+```{r Decompose, message=FALSE, warning=FALSE}
+#Decompose time series 
+ts_decompose <- ts_daily %>%
+  mstl()
+plot(ts_decompose)
+
+```
+## Model 1 STL
+
+```{r Model 1, message=FALSE, warning=FALSE}
+#Fit and forecast STL model 
+ETS_model <-  stlf(ts_daily,h=365)
+
+#Plot foresting
+autoplot(ETS_model) + ylab("Forecast")
+
+#Plot model + observed data
+autoplot(ts_daily2010) +
+  autolayer(ETS_model, series="STL Model",PI=FALSE) +
+  ylab("Daily_data")
+```
+
+
