@@ -9,12 +9,11 @@ editor_options:
   
   
 ```{r setup, include=FALSE} 
-knitr::opts_chunk$set(echo = TRUE,tidy.opts=list(width.cutoff=80), tidy=FALSE) 
+knitr::opts_chunk$set(echo = TRUE,tidy.opts=list(width.cutoff=200), tidy=FALSE) 
 ```
 
 ```{r, message=FALSE, warning=FALSE}
 #Load/install required package here
-#install.packages("openxlsx")
 library(readxl)
 library(openxlsx)
 library(lubridate)
@@ -30,59 +29,66 @@ library(tidyverse)
 The data comes from the US Energy Information and Administration and corresponds to the December 2022 Monthly Energy Review. Will focus only on the column "Total Renewable Energy Production". 
 
 
-```{r}
-#Importing data set - using xlsx package
-df <- read.xlsx("./Data/Table_10.1_Renewable_Energy_Production_and_Consumption_by_Source.xlsx", startRow = 11)
-df$Month <- convertToDate(df$Month)
+```{r, Part 1}
 
-df <- df[-c(1), ] #remove the row with the units
+#Importing data set - using xlsx package
+energy_data <- read.xlsx("./Data/Table_10.1_Renewable_Energy_Production_and_Consumption_by_Source.xlsx", startRow = 11)
 
 #Selecting for Renewable Energy Production column
-energy_data <- df %>%
-  select(Month, Total.Renewable.Energy.Production)
-#transform renewable energy data column from character to numeric
-energy_data$Total.Renewable.Energy.Production = as.numeric(energy_data$Total.Renewable.Energy.Production)
+energy_data_processed <- energy_data %>%
+  mutate(Date = convertToDate(energy_data$Month)) %>% #Month column imports incorrectly
+  select(Date, Total.Renewable.Energy.Production) 
+
+#Remove the row with the units
+energy_data_processed <- energy_data_processed[-c(1), ] 
+
+#Transform energy data column from character to numeric
+energy_data_processed$Total.Renewable.Energy.Production = as.numeric(energy_data_processed$Total.Renewable.Energy.Production)
 ```
 
 
 ## Part 2: Stochastic Trend and Stationary Tests
 
-### Differencing the Data
+### Differencing the data to remove the trend
 
  > Note: The trend was removed after differencing the time series as displayed in the plots below.
 
 ```{r Part 2}
-#differencing
-diff <- diff(energy_data[,2], lag = 1, differences = 1)
 
+#Differencing the data
+diff_data <- diff(energy_data_processed[,2], lag = 1, differences = 1)
+
+#Plot original data and the differenced data
 par(mfrow = c(1,2))
-plot(energy_data[,2], type="l", col = "blue", ylab = "Renewable Energy Prod.", main = "Original Data")
-plot(diff, type = "l", col="blue", ylab = "Renewable Energy Prod.", main = "Differenced Data")
+plot(energy_data_processed[,2], type="l", col = "blue", ylab = "Renewable Energy Prod.", main = "Original Data")
+plot(diff_data, type = "l", col="blue", ylab = "Renewable Energy Prod.", main = "Differenced Data")
 
 ```
 
 ### Part 3: Compare Differenced and Detrended Series
 
-Comparing the differenced series with the detrended series I calculated in the previous section.
+Comparing the differenced series with the detrended series that I calculated in the previous section.
 
 ```{r Part 3}
-num.obs <- nrow(energy_data)
+
+num.obs <- nrow(energy_data_processed)
 observ <- 1:num.obs
 
-#run linear model
-linear_renewable<- lm(energy_data[,2] ~ observ)
-summary(linear_renewable)
+#Run linear model
+linear_model<- lm(energy_data_processed[,2] ~ observ)
+summary(linear_model)
 
-#save regression coefficients
-beta0_renewable=as.numeric(linear_renewable$coefficients[1])  #first coefficient is the intercept term or beta0
-beta1_renewable=as.numeric(linear_renewable$coefficients[2])
+#Save regression coefficients as a variable
+beta0_renewable=as.numeric(linear_model$coefficients[1])
+#first coefficient is the intercept term or beta0
+beta1_renewable=as.numeric(linear_model$coefficients[2])
 
 #Detrend data by using the regression coefficients saved above
-RenewableEnergy_detrend <- energy_data[,2]-(beta0_renewable+beta1_renewable*observ)
-plot(RenewableEnergy_detrend, type = "l")
+RenewableEnergy_detrend <- energy_data_processed[,2]-(beta0_renewable+beta1_renewable*observ)
+plot(RenewableEnergy_detrend, type = "l", ylab = "Detrended Data")
 
 #Plot original data versus detrended data
-ggplot(energy_data, aes(x = Month, y = energy_data[,2], colour = "Original Data", col="blue")) +
+ggplot(energy_data_processed, aes(x = Date, y = energy_data_processed[,2], colour = "Original Data", col="blue")) +
   geom_line() +
   ylab(paste0("Detrended Renewable Energy")) +
   geom_line(aes(y=RenewableEnergy_detrend, colour = "Detrended Data"))+
@@ -92,30 +98,31 @@ ggplot(energy_data, aes(x = Month, y = energy_data[,2], colour = "Original Data"
 
 ### Part 4: Create New Dataframe
 
-Creating a new data frame with 4 columns: month, original series, detrended by regression series and differenced series. Make sure you properly name all columns.
+Creating a new data frame with 4 columns: date, original series, detrended by regression series and differenced series.
 
 ```{r Part 4}
+
 #Remove first row (i.e., January 1973) because differenced series will have less rows 
-energy_data<- energy_data[-c(1), ] 
+energy_data_processed<- energy_data_processed[-c(1), ] 
 Detrend <- RenewableEnergy_detrend[2:597]
 
 #Create data frame - remember to not include January 1973
-date <- energy_data[,1]
-RenewableEnergyProduction <- energy_data[,2]
-energy_df <- data.frame(date ,RenewableEnergyProduction, Detrend, diff)
+date <- energy_data_processed[,1]
+RenewableEnergyProduction <- energy_data_processed[,2]
+energy_df <- data.frame(date ,RenewableEnergyProduction, Detrend, diff_data)
 
 ```
 
 ### Part 5: Create ggplot
 
-Using ggplot() creating a line plot that shows the three series together. 
+Using ggplot(), creating a line plot that shows the three series together. 
 
 ```{r Part 5}
 #Use ggplot
 ggplot(energy_df, aes(x = date, y = RenewableEnergyProduction, colour = "Original Data", col="blue")) +
   geom_line() +
   geom_line(aes(y=Detrend, colour = "Detrended Data", col = "green")) +
-  geom_line(aes(y=diff, colour = "Differenced Data", col = "red")) +
+  geom_line(aes(y=diff_data, colour = "Differenced Data", col = "red")) +
   labs(x = "Date", y = "Renewable Energy Production", color = ' ') 
 
 ```
@@ -145,13 +152,18 @@ Computing the Seasonal Mann-Kendall and ADF Test for the original "Total Renewab
 > Statistical Results Interpretation: A Seasonal Mann-Kendall Test is used to determine whether or not a trend exists in a time series data. Since the results of the Seasonal Mann-Kendall Test had a p-value less than 0.05, the null hypothesis is rejected which indicates a trend present in the data. The ADF test had a p-value almost equal to 1 which indicates a stoichastic trend and differencing (rather than using regression) removed the trend more efficiently as seen in the plots from Q4.  
 
 ```{r Part 7}
+
 #Create a ts variable
-ts_energy_data <- ts(df[,5], frequency = 12, start = c(1973,1))
+ts_energy_data <- ts(energy_data_processed[,2], frequency = 12, start = c(1973,1))
+
 #Mann-Kendall Test
 SMKtest <- SeasonalMannKendall(ts_energy_data)
-print(summary(SMKtest)) # p-value=<2.22e-16 so we reject the null hypothesis (i.e., no trend)
+print(summary(SMKtest))
+#p-value=<2.22e-16 so we reject the null hypothesis (i.e., no trend)
+
 #ADF Test
-print(adf.test(ts_energy_data,alternative = "stationary")) #p-value = 0.9056 so we accept the null hypothesis (i.e., stochastic trend)
+print(adf.test(ts_energy_data,alternative = "stationary"))
+#p-value = 0.9056 so we accept the null hypothesis (i.e., stochastic trend)
 
 ```
 
@@ -160,12 +172,13 @@ print(adf.test(ts_energy_data,alternative = "stationary")) #p-value = 0.9056 so 
 Aggregating the original "Total Renewable Energy Production" series by year. 
 
 ```{r Part 8}
+
 #Create a year column
-annual_energy_data <- energy_data %>%
-  mutate(Year = lubridate::year(energy_data$Month))%>%
+annual_energy_data <- energy_data_processed %>%
+  mutate(Year = lubridate::year(energy_data_processed$Date))%>%
   select('Year', 'Total.Renewable.Energy.Production')
 
-#Group by Yyar for annual data
+#Group by year for annual data
 annual_energy_data <- annual_energy_data %>%
   group_by(Year) %>%
   summarise(RenewableEnergy = mean(Total.Renewable.Energy.Production))
@@ -174,20 +187,21 @@ annual_energy_data <- annual_energy_data %>%
 
 ### Part 9: Mann-Kendall, Spearman Correlation Rank Test, & ADF Test
 
-Applying the Mann Kendal, Spearman correlation rank test and ADF.
+Applying the Mann-Kendall, Spearman Correlation Rank Test, and ADF Test.
 
-```{r}
+```{r Part 9}
 #Create a ts variable
 ts_annual_energy_data <- ts(annual_energy_data[,2], frequency = 1, start = c(1973))
 
 #Mann-Kendall Test
 MKtest <- MannKendall(ts_annual_energy_data)
-print(summary(MKtest)) # p-value=<2.22e-16 so we reject the null hypothesis (i.e., no trend)
+print(summary(MKtest))#p-value=<2.22e-16 so we reject the null hypothesis (i.e., no trend)
 
 #Spearman Correlation Test
 cor.test(annual_energy_data$RenewableEnergy,annual_energy_data$Year, method = "spearman")
 
 #ADF Test 
-print(adf.test(ts_annual_energy_data,alternative = "stationary"))  #p-value = 0.99 so we accept the null hypothesis (i.e., stochastic trend)
+print(adf.test(ts_annual_energy_data,alternative = "stationary")) 
+#p-value = 0.99 so we accept the null hypothesis (i.e., stochastic trend)
 ```
 
